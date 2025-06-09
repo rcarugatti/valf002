@@ -1,0 +1,152 @@
+<mvc:View
+    controllerName="sdmcoletor.controller.Object"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"    
+    xmlns:semantic="sap.f.semantic"  
+    xmlns:core="sap.ui.core"
+    	
+     >
+    <semantic:SemanticPage
+        id="idMainSemanticPage"
+        class="zoom70-"
+        headerPinnable="false"
+        toggleHeaderOnTitleClick="false"
+        busy="{objectView>/busy}"
+        busyIndicatorDelay="{objectView>/delay}" 
+        showFooter="true">
+        <semantic:titleHeading>
+            <Title id="idLpnTitle" title="{i18n>lpnLabel}" text="{lpn}" level="H3"/>
+        </semantic:titleHeading>
+        <semantic:headerContent>
+            <FlexBox id="idMainFlexBox" width="100%" height="auto" alignItems="Start">
+                <Panel id="idMainPanel" backgroundDesign="Transparent">
+                    <Button
+                    id="idVoltarWorklistButton"
+                    icon="sap-icon://nav-back"
+                    text="Voltar"
+                    press=".onNavBack"/>
+                </Panel>
+                <Panel id="idMainPane1" backgroundDesign="Transparent">
+                    <Button
+                    id="idAplicarButton"
+                    text="Aplicar"
+                    type="Emphasized"
+                    press=".onAplicarButtonPress"/>
+                </Panel>
+                <Panel id="idMainPane2" backgroundDesign="Transparent">
+                    <!-- Pesquisa por posição Destino
+                    <Label id="idLabelPosDes" text="posição Destino"/>   -->
+                    <Label text="Deposito Destino :  ." labelFor="idSelectPosDestino"/>
+                    <Select
+                         id="idSelectDepositoDestino"
+                         items="{ path: 'DepPosData>/' }">
+                        <core:Item key="{DepPosData>WERKS}" text="{DepPosData>POSIT}" templateShareable="false"/>
+                    </Select>
+                    <!-- <Select
+                         id="idSelectPosDestino"
+                         width="3.5rem"                   
+                         items="{path:'DepPosData>/' }">
+                        <core:Item key="{DepPosData>WERKS}" text="{DepPosData>LGORT}" templateShareable="false"/>
+                    </Select>-->
+                </Panel>
+                <Panel id="idMainPanel3" backgroundDesign="Transparent">
+                    <!-- Pesquisa por deposito Destino  
+                    <Label id="idLabelDepDes" text="Depósito Destino"/>   -->
+                    <Label text="Posição Destino :  ." labelFor="idSelectDepositoDestino"/>
+                    <Select
+                        id="idSelectPosDestino"
+                        width="10rem"
+                        items="{PosDestinoConcat>/}">
+                        <core:Item key="{PosDestinoConcat>POSICAO}" text="{PosDestinoConcat>TEXTO}" />
+                    </Select>
+                </Panel>
+            </FlexBox>
+        </semantic:headerContent>
+        <semantic:content>
+            <Table
+                id="objectTable"
+                width="100%"
+                items="{
+                path: 'SelecionadosParaTransporte>/'    
+                }" 
+                noDataText="{worklistView>/tableNoDataText}"
+                busyIndicatorDelay="{worklistView>/tableBusyDelay}"
+                growing="true"
+                growingScrollToLoad="true"
+                updateFinished=".onUpdateFinished">
+                <columns class="sapUiResponsiveMargin">
+                    <Column id="selectColumnObj" width="2rem">
+                        <Text text=" "/>
+                    </Column>
+                    <Column id="nameColumnObj">
+                        <Text text="{i18n>tableNameColumnTitle}" id="nameColumnTitleObj"/>
+                    </Column>
+                    <Column id="depositoOrigemColumnObj">
+                        <Text text="{i18n>depositOrigemLabel}" id="depositoOrigemColumnTitleObj"/>
+                    </Column>
+                    <Column id="posicaoOrigemColumnObj">
+                        <Text text="{i18n>posOrigLabel}" id="posicaoOrigemColumnTitleObj"/>
+                    </Column>
+                    <Column id="loteSDMColumnObj">
+                        <Text text="{i18n>lSDMLabel}" id="loteSDMColumnTitleObj"/>
+                    </Column>
+                    <Column id="DUColumnObj">
+                        <Text text="{i18n>DULabel}" id="DUColumnTitleObj"/>
+                    </Column>
+                    <Column id="depositoDestinoColumnObj">
+                        <Text text="{i18n>depositoDestinoLabel}" id="depositoDestinoColumnTitleObj"/>
+                    </Column>
+                    <Column id="posicaoDestinoColumnObj">
+                        <Text text="{i18n>posDstLabel}" id="posicaoDestinoColumnTitleObj"/>
+                    </Column>
+                    <Column id="materialColumnObj">
+                        <Text text="{i18n>materialLabel}" id="materialColumnTitleObj"/>
+                    </Column>
+                </columns>
+                <items>
+                    <ColumnListItem
+                        type="Inactive"
+                        press=".onPresst" >
+                        <cells>
+                            <CheckBox select=".onSelectCheckBox"/>
+                    <!--    <Text text=" "/>   
+                            <CheckBox   selected="{selected}" select=".onSelectCheckBox"/> -->
+                            <Text text="{SelecionadosParaTransporte>lpn}"/>
+                            <Text text="{SelecionadosParaTransporte>deposito_origem}"/>
+                            <Text text="{SelecionadosParaTransporte>posicao_origem}"/>
+                            <!-- Adicione os campos que desejar -->
+                            <Text text="{SelecionadosParaTransporte>lote_sdm}"/>
+                            <Text text="{SelecionadosParaTransporte>DU}"/>
+                            <Select
+                                id="idSelectDepDestino"
+                                selectedKey="{SelecionadosParaTransporte>deposito_destino}"
+                                width="3.5rem"
+                                change=".onChangeDepositoDestino"
+                                items="{path:'DepPosData>/' }">
+                                <core:Item key="{DepPosData>WERKS}" text="{DepPosData>LGORT}" templateShareable="false"/>
+                            </Select>
+                            <Select
+                                selectedKey="{SelecionadosParaTransporte>posicao_origem}"
+                                 width="3.5rem"
+                                change=".onChangeposicaoDestino"
+                                items="{
+                                    path: 'DepPosData/'
+                                }">
+                                <core:Item key="{DepPosData>centro}" text="{DepPosData>posicao_origem}" templateShareable="false"/>
+                            </Select>
+                            <Text text="{SelecionadosParaTransporte>material}"/>
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </semantic:content>
+  <!--      <semantic:sendEmailAction>
+            <semantic:SendEmailAction id="shareEmail" press=".onShareEmailPress"/>
+        </semantic:sendEmailAction>
+         Custom Footer Content-->
+        <semantic:footerCustomActions>
+            <Button text="Save" press=".onSalvarPress" type="Emphasized" icon="sap-icon://save" />
+            <Button text="Cancel" />
+        </semantic:footerCustomActions>
+    </semantic:SemanticPage>
+</mvc:View>

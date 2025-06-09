@@ -1,0 +1,203 @@
+<mvc:View
+    controllerName="sdmcoletor.controller.Worklist"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:semantic="sap.f.semantic">
+    <semantic:SemanticPage
+        id="page"
+        class="zoom70-"
+        headerPinnable="false"
+        toggleHeaderOnTitleClick="false">
+        <semantic:titleHeading>
+            <Title
+                text="{i18n>worklistTitle}"
+                level="H3"/>
+        </semantic:titleHeading>
+        <semantic:headerContent>
+            <Panel id="idMainPanel1" backgroundDesign="Transparent">
+                <!-- 
+                <Table id="materialsTable" 
+                       items="{materialsLPN>/materialsLPN}">
+                    <columns>
+                        <Column>
+                            <Text text="Leitura LPN" />
+                        </Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem>
+                            <cells>
+                                 <Text text=  "{materialsLPN>material}"/>
+                
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>    -->
+                <HBox >
+                    <VBox>
+                        <Label text="Material"/>
+                        <SearchField
+                                id="searchFieldMaterial"                         
+                            placeholder="Mater."
+                                            width="8rem"
+                            search=".onSearch"/>
+                    </VBox>
+                    <VBox>
+                        <Label text="L.SDM"/>
+                        <!-- Pesquisa por Lote SDM -->
+                        <SearchField
+                            id="searchLoteSDM"                            
+                            placeholder="L.SDM"
+                            width="8rem"
+                            liveChange=".onSearch"/>
+                        <!-- Pesquisa por Deposito Origem -->
+                    </VBox>
+                    <VBox>
+                        <Label text="L.SDM"/>
+                        <SearchField
+                            id="searchDepOrigem"                         
+                            placeholder="Dp.Org"
+                             width="8rem"
+                            liveChange=".onSearch"/>
+                    </VBox>
+                    <VBox>
+                        <Label text=" "/>
+                        <Button
+                                id="onValidarEntradas"
+                                icon="sap-icon://shipping-status"
+                                text="Transportar"
+                                type="Emphasized"
+                                press=".onValidarEntradas"/>
+                    </VBox>
+                </HBox>
+                <HBox class="sapUiSmallMarginTop">
+                    <Input id="inputMaterial" placeholder="Digite o LPN" width="200px"  submit=".onAddMaterial" />
+                    <!--         <Button text="Adicionar" press="onAddMaterial" class="sapUiTinyMarginBegin"/>
+                    <Button text="Mostrar no Console" press="onShowArray" class="sapUiTinyMarginBegin"/>
+                    
+                     path: '/ZC_SDM_MOVLPN',
+                                     items="{        path: 'MovLpn>/',     
+               
+        sorter: [
+            { path: 'lpn', descending: false },
+            { path: 'centro', descending: false },
+            { path: 'deposito_origem', descending: false } ]
+                    
+                    -->
+                </HBox>
+            </Panel>
+        </semantic:headerContent>
+        <semantic:content>
+            <Table
+                id="table"
+                width="auto"
+                items="{/}"  
+               
+
+               
+                noDataText="{worklistView>/tableNoDataText}"
+                busyIndicatorDelay="{worklistView>/tableBusyDelay}"
+                growing="true"
+                growingScrollToLoad="true"
+                updateFinished=".onUpdateFinished">
+                <headerToolbar>
+                    <OverflowToolbar id="worklistOverflowToolbar">
+                        <Title
+                            id="tableHeader"
+                            text="{worklistView>/worklistTableTitle}"
+                            level="H4"/>
+                        <!-- Pesquisa por LPN 
+                        <SearchField
+                            id="searchFieldLPN"
+                            width="5rem"
+                            placeholder="P.LPN"
+                            search=".onSearch"/> -->
+                        <!-- Pesquisa por Lote SDM 
+                        <SearchField
+                            id="searchLoteSDM"
+                            width="5rem"
+                            placeholder="L.SDM"
+                            liveChange=".onSearch"/>-->
+                        <!-- Pesquisa por Deposito Origem 
+                        <SearchField
+                            id="searchDepOrigem"
+                            width="5rem"
+                            placeholder="Dp.Org"
+                            liveChange=".onSearch"/> -->
+                        <!-- <SearchField
+                            id="searchField2"
+                            tooltip="{i18n>worklistSearchTooltip}"
+                            search=".onSearch">
+                            <layoutData>
+                                <OverflowToolbarLayoutData
+                                    maxWidth="200px"
+                                    priority="NeverOverflow"/>
+                            </layoutData>
+                        </SearchField> 
+                        <Input
+                            id="inputDepositoOrigem"
+                            width="8rem"
+                            placeholder="Depósito Origem"
+                            liveChange=".onFilterDepositoOrigem"/>                      
+                        
+                         -->
+                    </OverflowToolbar>
+                </headerToolbar>
+                <columns>
+                    <Column id="selectColumn" width="2rem">
+                     <CheckBox select=".onSelectCheckBox"/>
+                    <!--    <Text text=" "/>   -->
+                    </Column>
+                    <Column id="nameColumn" width="4rem" >
+                        <Text text="{i18n>lpnLabel}" id="nameColumnTitle" />
+                    </Column>
+                    <Column id="materialColumn" hAlign="End">
+                        <Text text="{i18n>matLabel}" id="materialColumnTitle" width="4rem"/>
+                    </Column>
+                    <Column id="depositoOrigemColumn" hAlign="End" width="4rem">
+                        <Text text="{i18n>depositOrigemLabel}" id="unidepositoColumnTitle"  />
+                    </Column>
+                    <Column id="posicaoOrigemColumn" hAlign="End" width="4rem">
+                        <Text text="{i18n>posOrigLabel}" id="unitNumberColumnTitle"  />
+                    </Column>
+                    <Column id="quantidadeColumn" hAlign="End">
+                        <Text text="{i18n>quantLabel}" id="quantidadeColumnTitle" width="4rem"/>
+                    </Column>
+                    <Column id="DUColumn" hAlign="End">
+                        <Text text="{i18n>DULabel}" id="DUColumnTitle" width="4rem"/>
+                    </Column>
+                    <Column id="loteSDMColumn" hAlign="End">
+                        <Text text="{i18n>lSDMLabel}" id="loteSDMColumnTitle" width="4rem"/>
+                    </Column>
+                </columns>
+                <items>
+                    <ColumnListItem
+                        type="Navigation"
+                        press=".onPress">
+                        <cells>
+                            <CheckBox        selected="{selected}" select=".onSelectCheckBox"/>
+                            <ObjectIdentifier   title="{lpn}"/>
+                            <Text text=               "{material}"/>
+                            <Text text=               "{deposito_origem}"/>
+                            <Text text=               "{posicao_origem}"/>
+                    <!--    <Text text=               "{quant}"/> -->
+                            <Text text="{= (+${Quantidade} || 0) + (+${StckQuant} || 0) }"/>
+                            <Text text=               "{DU}"/>
+                            <!--          <ObjectStatus
+                                text="{DU}"
+                                state="{= ${DU} === 'BLOQ.' ? 'Error' : ${DU} === 'LIB.' ? 'Success' : 'None' }"/>  -->
+                            <Text text=               "{lote_sdm}"/>
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </semantic:content>
+        <!--  <semantic:sendEmailAction>
+          <semantic:SendEmailAction id="shareEmail" press=".onShareEmailPress"/>  
+            <semantic:SendEmailAction
+                id="shareEmail"
+                press=".onShareEmailPress"
+                text="{i18n>sendEmailActionText}"
+                tooltip="{i18n>sendEmailActionTooltip}"/>
+        </semantic:sendEmailAction>                                         -->
+    </semantic:SemanticPage>
+</mvc:View>

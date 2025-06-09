@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=500, height=800, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>SDM Coletor</title>
+    <style>
+       /*  html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #container {
+            width: 500px;
+            height: 800px; 
+            margin: 0 auto;
+            border: 1px solid #ccc; /* Opcional: só para visualização *
+            background: #fff;
+            overflow: auto;
+            box-sizing: border-box;
+        }  */
+
+        /* Reduz o tamanho da fonte dos textos e labels SAPUI5
+        .sapMText, .sapMLabel, .sapMInputBase, .sapMSelectListItem, .sapMSelectListText {
+            font-size: 0.85rem !important;
+        } */
+
+        /* Reduz o padding das células da tabela 
+        .sapMListTblCell, .sapMTableCell {
+            padding: 0.1rem 0.3rem !important;
+        }
+
+        /* Opcional: reduz o tamanho dos botões 
+        .sapMBtnInner {
+            font-size: 0.85rem !important;
+            padding: 0.2rem 0.6rem !important;
+        }    */
+
+   /* .zoom70 {
+    zoom: 0.7;
+    /* Para compatibilidade com browsers modernos */
+   /*   transform: scale(0.7);
+    transform-origin: top left;
+  }                                                       */
+</style>
+    </style>
+    <script
+        id="sap-ui-bootstrap"
+        src= "https://sapui5.hana.ondemand.com/resources/sap-ui-core.js"
+        src="resources/sap-ui-core.js"
+        data-sap-ui-theme="sap_horizon"
+        data-sap-ui-resourceroots='{
+            "sdmcoletor": "./"
+        }'
+        data-sap-ui-compatVersion="edge"
+        data-sap-ui-async="true"
+        data-sap-ui-frameOptions="trusted"
+    ></script>
+    <script id="locate-reuse-libs" src="./utils/locate-reuse-libs.js"
+        data-sap-ui-manifest-uri="./manifest.json"
+        data-sap-ui-componentName="sdmcoletor">
+    </script> 
+</head>
+<body class="sapUiBody sapUiSizeCompact">
+    <div
+        data-sap-ui-component
+        data-name="sdmcoletor"
+        data-id="container"
+        data-settings='{"id" : "sdmcoletor"}'
+        data-handle-validation="true"
+        id="container"
+    ></div>
+</body>
+</html>

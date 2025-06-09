@@ -1,0 +1,114 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Cabin:ital,wght@0,400..700;1,400..700&display=swap');
+body, .sapMText, .sapMLabel, .sapMInputBase, .sapMBtnInner, .sapMListTblCell, .sapMTableCell {
+    font-size: 0.5rem !important;
+    font-family: "Cabin", sans-serif;
+    font-weight: 400;
+}
+
+.sapMTableCell, .sapMListTblCell {
+    padding: 0.1rem 0.2rem !important;
+}
+.sapUiResponsiveMargin {
+    margin: 0.2rem !important;
+}
+.sapUiTableHeaderDataCell .sapMText, .sapMColumnHeader .sapMText {
+    font-weight: bold;
+    font-size: 0.5rem !important;
+    color: #3118ea;
+}
+.sapMBtnInner {
+    font-size: 0.5rem !important;
+    min-height: 1.5rem;
+    padding: 0.2rem 0.5rem !important;
+}
+.sapMInputBaseInner {
+    font-size: 0.5rem !important;
+    min-height: 1.5rem;
+}
+#container {
+ /* width: 500px;
+    height: 750px; */
+    margin: 0 auto;
+    overflow: auto;
+    background: #fff;
+} 
+/* Select (campo fechado) */
+.sapMSelect {
+    font-size: 0.5rem !important;
+    min-height: 0.7rem !important;
+    height: 0.7rem !important;
+    padding: 0 !important;
+    line-height: 0.7rem !important;
+}
+.sapMSelectListText,
+.sapMSelectListItem,
+.sapMSelectList {
+    font-size: 0.5rem !important;
+    font-family: "Cabin", sans-serif;
+    min-height: 0.6rem !important;    /* Reduza aqui */
+    padding: 0.1rem 0.3rem !important; /* Reduza aqui */
+}
+
+#table {
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+    display: table !important;
+}
+.duGreen {
+    color: #107e3e !important;
+    font-weight: bold;
+}
+.duRed {
+    color: #bb0000 !important;
+    font-weight: bold;
+}
+.duBloqueado,
+.sapMText.duBloqueado {
+    color: red !important;
+    font-weight: bold;
+}
+
+/* Botões
+.sapMBtnInner {
+    font-size: 0.5rem !important;
+    min-height: 1.7rem !important;
+    height: 1.7rem !important;
+    padding: 0 !important;
+    line-height: 1.7rem !important;
+} */
+
+
+
+
+/* Select (itens do dropdown) 
+.sapMSelectListItem,
+.sapMSelectListText,
+.sapMSelectList {
+    font-size: 0.5rem !important;
+    min-height: 0.7rem !important;
+    height: 0.7rem !important;
+    padding: 0 !important;
+    line-height: 0.7rem !important;
+}*/
+
+/* Input e filtros 
+.sapMInputBaseInner,
+.sapMSFF {
+    font-size: 0.5rem !important;
+    min-height: 0.7rem !important;
+    height: 0.7rem !important;
+    padding: 0 !important;
+    line-height: 0.7rem !important;
+}*/
+
+/* Checkbox
+.sapMCbBg,
+.sapMCb {
+    min-height: 1.2rem !important;
+    height: 1.0rem !important;
+    width: 1.0rem !important;
+        padding: 0.1rem 0.3rem !important; 
+        
+} */
