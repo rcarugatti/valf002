@@ -2,82 +2,153 @@
     controllerName="sdmcoletor.controller.Worklist"
     xmlns="sap.m"
     xmlns:mvc="sap.ui.core.mvc"
-    xmlns:semantic="sap.f.semantic">
+    xmlns:semantic="sap.f.semantic"
+        xmlns:core="sap.ui.core">
     <semantic:SemanticPage
         id="page"
         class="zoom70-"
-        headerPinnable="false"
-        toggleHeaderOnTitleClick="false">
-        <semantic:titleHeading>
-            <Title
-                text="{i18n>worklistTitle}"
-                level="H3"/>
-        </semantic:titleHeading>
+        headerPinnable="true"
+        toggleHeaderOnTitleClick="true"
+        headerExpanded="false" 
+         >
+        <semantic:titleSnappedContent>
+            <HBox  id="idHbox01">
+                <Title id="idTxt02" text="Movimentação de LPNs" level="H3" />
+            </HBox>
+        </semantic:titleSnappedContent>
         <semantic:headerContent>
-            <Panel id="idMainPanel1" backgroundDesign="Transparent">
-                <!-- 
-                <Table id="materialsTable" 
-                       items="{materialsLPN>/materialsLPN}">
-                    <columns>
-                        <Column>
-                            <Text text="Leitura LPN" />
-                        </Column>
-                    </columns>
-                    <items>
-                        <ColumnListItem>
-                            <cells>
-                                 <Text text=  "{materialsLPN>material}"/>
-                
-                            </cells>
-                        </ColumnListItem>
-                    </items>
-                </Table>    -->
-                <HBox >
-                    <VBox>
-                        <Label text="Material"/>
+            <Panel id="idMainPanel2" backgroundDesign="Transparent">
+                <!-- ============================================================================      LINHA 1 -->
+                <HBox id="idHbox02" justifyContent="Start" alignItems="Center" class="sapUiSmallMarginBottom" >
+                    <VBox id="idVbox01" class="sapUiSmallMarginEnd" >
+                        <!-- Pesquisa por Centro -->
+                        <Label id="idLabel13" text="Centro"  design="Bold"/>
+                        <SearchField
+                                id="searchFieldCentro"                         
+                            placeholder=""
+                             width="8.3rem"
+                            liveChange=".onCentroChange" />
+                        <!-- search=".onSearch" ,  liveChange=".onCentroChangeComFiltro" -->
+                    </VBox>
+                    <VBox id="idVbox02" class="sapUiSmallMarginEnd">
+                        <!-- Pesquisa por Material -->
+                        <Label id="idLabel02" text="Material"/>
                         <SearchField
                                 id="searchFieldMaterial"                         
-                            placeholder="Mater."
-                                            width="8rem"
-                            search=".onSearch"/>
+                            placeholder=""
+                                            width="8.3rem"
+                                            liveChange=".onFilterTabelaCompleta"/>
+                        <!-- search=".onSearch" -->
                     </VBox>
-                    <VBox>
-                        <Label text="L.SDM"/>
+                    <VBox id="idVbox03" class="sapUiSmallMarginEnd" >
                         <!-- Pesquisa por Lote SDM -->
+                        <Label id="idLabel03" text="Lote SDM"/>
                         <SearchField
                             id="searchLoteSDM"                            
-                            placeholder="L.SDM"
-                            width="8rem"
-                            liveChange=".onSearch"/>
+                            placeholder=""
+                            width="8.3rem"
+                            liveChange=".onFilterTabelaCompleta" />
+                        <!-- liveChange=".onSearch" -->
+                    </VBox>
+                </HBox >
+                <!-- ====================================================================================== LINHA 2 -->
+                <HBox id="idHbox03" justifyContent="Start" alignItems="Center" class="sapUiSmallMarginBottom" >
+                    <VBox id="idVbox04" class="sapUiSmallMarginEnd" >
                         <!-- Pesquisa por Deposito Origem -->
+                        <Label id="idLabel04" text="Deposito"/>
+                        <ComboBox                            
+                            id="idSelectDeposito"
+                            width="8.6rem"                              
+                            selectedKey=""                        
+                            change=".onFilterTabelaCompleta" 
+                            placeholder="Todos"                          
+                            items="{DepositoFilter>/}">
+                            <core:Item id="idItem04"  key="{DepositoFilter>key}" text="{DepositoFilter>text}" />
+                        </ComboBox>
+                        <!--                         <Select
+                            id="idSelectDeposito"
+                            change=".onFilterTabelaCompleta"                           
+                            items="{DepositoFilter>/}"
+                            width="8.6rem"
+                            selectedKey="">
+                            <core:Item key="{DepositoFilter>key}" text="{DepositoFilter>text}" />
+                        </Select>  -->
                     </VBox>
-                    <VBox>
-                        <Label text="L.SDM"/>
-                        <SearchField
-                            id="searchDepOrigem"                         
-                            placeholder="Dp.Org"
-                             width="8rem"
-                            liveChange=".onSearch"/>
+                    <VBox id="idVbox05" class="sapUiSmallMarginEnd" >
+                        <!-- Pesquisa por POSIÇÃO Origem -->
+                        <Label id="idLabel05" text="Posição"  design="Bold"/>
+                        <ComboBox
+    id="idComboPosicao"
+    width="8rem"
+    selectedKey=""
+    change=".onChangePosicao"
+    placeholder="Todos"  
+    items="{PosicaoFilter>/}">
+                            <core:Item id="idItm04"  key="{PosicaoFilter>key}" text="{PosicaoFilter>text}" />
+                        </ComboBox>
+                        <!--           <Select
+                            id="idSelectPosicao"
+                            change=".onFilterTabelaCompleta"                            
+                            items="{PosicaoFilter>/}"
+                            width="8.6rem"
+                            selectedKey="">
+                            <core:Item key="{PosicaoFilter>key}" text="{PosicaoFilter>text}" />
+                        </Select>
+                            -->
                     </VBox>
-                    <VBox>
-                        <Label text=" "/>
+                    <VBox id="idVbox06" class="sapUiSmallMarginEnd" >
+                        <!-- Pesquisa por DU -->
+                        <Label id="idLabel06" text="DU"/>
+                        <Select
+                            id="idSelectDU"
+                            change=".onFilterTabelaCompleta"                           
+                            items="{DUFilter>/}"
+                            width="8.6rem"
+                            selectedKey="">
+                            <core:Item id="idItm05"  key="{DUFilter>key}" text="{DUFilter>text}" />
+                        </Select>
+                    </VBox>
+                </HBox>
+                <!-- ====================================================================================================       LINHA 3 -->
+                <HBox id="idHbox04" justifyContent="Start" alignItems="Center" class="sapUiSmallMarginBottom" >
+                    <VBox id="idVbox07" class="sapUiSmallMarginEnd">
+                        <!-- Input do leitor -->
+                        <Label id="idLabel012" text="LPN"/>
+                        <Input id="inputMaterial" placeholder="Digite ou faça leitura" width="200px"  submit=".onAddMaterial" />
+                    </VBox>
+                    <VBox id="idVbox08" class="sapUiSmallMarginEnd">
+                        <Label id="idLabel07" text=" "/>
+                        <!-- Botao transportar -->
                         <Button
                                 id="onValidarEntradas"
                                 icon="sap-icon://shipping-status"
-                                text="Transportar"
+                                text="Transferir"
                                 type="Emphasized"
+                                width="8.6rem"
                                 press=".onValidarEntradas"/>
                     </VBox>
-                </HBox>
-                <HBox class="sapUiSmallMarginTop">
-                    <Input id="inputMaterial" placeholder="Digite o LPN" width="200px"  submit=".onAddMaterial" />
+                    <VBox id="idVbox09" class="sapUiSmallMarginEnd">
+                        <!-- Botao Refrech -->
+                        <Label id="idLabel10" text=" "/>
+                        <Button
+                                icon="sap-icon://refresh"
+                                text=""
+                                id="onRefresh"
+                                type="Emphasized"
+                                press=".onRefreshPress"/>
+                    </VBox>
+                    <!--   <SearchField
+                            id="searchDU"                         
+                            placeholder="L.DU"
+                             width="8rem"
+                            liveChange=".onSearchDU"/>  -->
                     <!--         <Button text="Adicionar" press="onAddMaterial" class="sapUiTinyMarginBegin"/>
                     <Button text="Mostrar no Console" press="onShowArray" class="sapUiTinyMarginBegin"/>
                     
                      path: '/ZC_SDM_MOVLPN',
                                      items="{        path: 'MovLpn>/',     
                
-        sorter: [
+            sorter: [
             { path: 'lpn', descending: false },
             { path: 'centro', descending: false },
             { path: 'deposito_origem', descending: false } ]
@@ -89,9 +160,17 @@
         <semantic:content>
             <Table
                 id="table"
+
                 width="auto"
-                items="{/}"  
-               
+                   items="{ path: '/ZC_SDM_MOVLPN',
+        sorter: [
+            { path: 'centro',          descending: false },
+            { path: 'deposito_origem', descending: false },
+            { path: 'posicao_origem',  descending: false }] 
+            
+              }"    
+                   mode="MultiSelect"
+                   selectionChange=".onSelectChange"
 
                
                 noDataText="{worklistView>/tableNoDataText}"
@@ -99,31 +178,31 @@
                 growing="true"
                 growingScrollToLoad="true"
                 updateFinished=".onUpdateFinished">
-                <headerToolbar>
+                                <headerToolbar>
                     <OverflowToolbar id="worklistOverflowToolbar">
                         <Title
                             id="tableHeader"
                             text="{worklistView>/worklistTableTitle}"
                             level="H4"/>
-                        <!-- Pesquisa por LPN 
+                <!-- Pesquisa por LPN 
                         <SearchField
                             id="searchFieldLPN"
                             width="5rem"
                             placeholder="P.LPN"
                             search=".onSearch"/> -->
-                        <!-- Pesquisa por Lote SDM 
+                <!-- Pesquisa por Lote SDM 
                         <SearchField
                             id="searchLoteSDM"
                             width="5rem"
                             placeholder="L.SDM"
                             liveChange=".onSearch"/>-->
-                        <!-- Pesquisa por Deposito Origem 
+                <!-- Pesquisa por Deposito Origem 
                         <SearchField
                             id="searchDepOrigem"
                             width="5rem"
                             placeholder="Dp.Org"
                             liveChange=".onSearch"/> -->
-                        <!-- <SearchField
+                <!-- <SearchField
                             id="searchField2"
                             tooltip="{i18n>worklistSearchTooltip}"
                             search=".onSearch">
@@ -137,21 +216,23 @@
                             id="inputDepositoOrigem"
                             width="8rem"
                             placeholder="Depósito Origem"
-                            liveChange=".onFilterDepositoOrigem"/>                      
-                        
-                         -->
-                    </OverflowToolbar>
-                </headerToolbar>
+                            liveChange=".onFilterDepositoOrigem"/>  -->
+                      
+                    </OverflowToolbar>      
+                </headerToolbar>    
                 <columns>
-                    <Column id="selectColumn" width="2rem">
-                     <CheckBox select=".onSelectCheckBox"/>
-                    <!--    <Text text=" "/>   -->
-                    </Column>
+                    <!--          <Column id="selectColumn" width="2rem">
+                        <CheckBox   select=".onHeaderCheckBoxSelect"/>
+           <Text text=" "/>   
+                    </Column>-->
                     <Column id="nameColumn" width="4rem" >
                         <Text text="{i18n>lpnLabel}" id="nameColumnTitle" />
                     </Column>
                     <Column id="materialColumn" hAlign="End">
                         <Text text="{i18n>matLabel}" id="materialColumnTitle" width="4rem"/>
+                    </Column>
+                    <Column id="DUColumn" hAlign="End">
+                        <Text text="{i18n>DULabel}" id="DUColumnTitle" width="4rem"/>
                     </Column>
                     <Column id="depositoOrigemColumn" hAlign="End" width="4rem">
                         <Text text="{i18n>depositOrigemLabel}" id="unidepositoColumnTitle"  />
@@ -162,30 +243,32 @@
                     <Column id="quantidadeColumn" hAlign="End">
                         <Text text="{i18n>quantLabel}" id="quantidadeColumnTitle" width="4rem"/>
                     </Column>
-                    <Column id="DUColumn" hAlign="End">
-                        <Text text="{i18n>DULabel}" id="DUColumnTitle" width="4rem"/>
-                    </Column>
-                    <Column id="loteSDMColumn" hAlign="End">
+                    <Column id="loteSDMColumn" hAlign="End" >
                         <Text text="{i18n>lSDMLabel}" id="loteSDMColumnTitle" width="4rem"/>
                     </Column>
                 </columns>
                 <items>
-                    <ColumnListItem
+                    <ColumnListItem id="idCol02"
                         type="Navigation"
-                        press=".onPress">
+                        press=".onPress" >
                         <cells>
-                            <CheckBox        selected="{selected}" select=".onSelectCheckBox"/>
-                            <ObjectIdentifier   title="{lpn}"/>
-                            <Text text=               "{material}"/>
-                            <Text text=               "{deposito_origem}"/>
-                            <Text text=               "{posicao_origem}"/>
-                    <!--    <Text text=               "{quant}"/> -->
-                            <Text text="{= (+${Quantidade} || 0) + (+${StckQuant} || 0) }"/>
-                            <Text text=               "{DU}"/>
-                            <!--          <ObjectStatus
-                                text="{DU}"
+                            <!--                         highlight="{= ${SelecionadosParaTransporte>DU} === 'BLOQ.' ? 'Error' : ${SelecionadosParaTransporte>DU} === 'LIB.' ? 'Success' : 'None'}"> -->
+                            <!--      <CheckBox           selected="{selected}" select=".onSelectCheckBox"/> -->
+                            <ObjectIdentifier  id="idObject02" title="{lpn}"/>
+                            <Text id="idTextMaterial" text="{material}"/>
+                   <!--     <Text id="idTextDU" text="{DU}"
                                 state="{= ${DU} === 'BLOQ.' ? 'Error' : ${DU} === 'LIB.' ? 'Success' : 'None' }"/>  -->
-                            <Text text=               "{lote_sdm}"/>
+
+<ObjectStatus  id="idTextDU"
+  text="{DU}"
+  state="{= ${DU} === 'BLOQ.' ? 'Error' : ${DU} === 'LIB.' ? 'Success' : 'None' }"/>
+
+
+                            <Text id="idTextDepoOri" text=               "{deposito_origem}"/>
+                            <Text id="idTextPosiOri" text=               "{posicao_origem}"/>
+                            <!--    <Text text=               "{quant}"/> -->
+                            <Text id="idTextQuantidade" text="{= (+${Quantidade} || 0) + (+${StckQuant} || 0) }"/>
+                            <Text id="idTexLoteSDM" text=               "{lote_sdm}"/>
                         </cells>
                     </ColumnListItem>
                 </items>

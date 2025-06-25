@@ -10,7 +10,8 @@
   ],
   "main": "webapp/index.html",
   "devDependencies": {
-    "@sap-ux/ui5-middleware-fe-mockserver": "2",
+    "@sap-ux/deploy-tooling": "^0.16.6",
+    "@sap-ux/ui5-middleware-fe-mockserver": "^2.2.96",
     "@sap/ux-ui5-tooling": "1",
     "@ui5/cli": "^4.0.16",
     "cd..": "^0.0.0",
@@ -32,8 +33,7 @@
   },
   "ui5": {
     "dependencies": [
-      "@sap/ux-ui5-tooling",
-      "@sap-ux/ui5-middleware-fe-mockserver"
+      "@sap/ux-ui5-tooling"
     ]
   },
   "sapuxLayer": "CUSTOMER_BASE"

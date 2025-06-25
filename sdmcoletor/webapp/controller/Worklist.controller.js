@@ -17,32 +17,34 @@ sap.ui.define(
       /* =========================================================== */
       onValidarEntradas: function () {
         var oTable = this.byId("table");
-        var aItems = oTable.getItems();
+        var aSelectedItems = oTable.getSelectedItems(); // <-- pega os selecionados via UI5
         var aSelecionados = [];
         var sTipoDU = null;
         var sObjectId = null;
 
-        // Coleta todos os selecionados e verifica o tipo de DU
-        for (var i = 0; i < aItems.length; i++) {
-          var oContext = aItems[i].getBindingContext();
-          if (oContext && oContext.getProperty("selected")) {
-            var sDU = oContext.getProperty("DU");
-            if (!sTipoDU) {
-              sTipoDU = sDU;
-            } else if (sDU !== sTipoDU) {
-              sap.m.MessageToast.show("Somente aceita DU do mesmo Tipo");
-              return;
-            }
+        for (var i = 0; i < aSelectedItems.length; i++) {
+          var oContext = aSelectedItems[i].getBindingContext();
+          if (!oContext) {
+            continue;
+          }
 
-            aSelecionados.push(oContext.getObject());
-            if (!sObjectId) {
-              sObjectId = oContext.getProperty("lpn");
-            }
+          var sDU = oContext.getProperty("DU");
+          if (!sTipoDU) {
+            sTipoDU = sDU;
+          } else if (sDU !== sTipoDU) {
+            sap.m.MessageToast.show("Somente aceita DU do mesmo Tipo");
+            return;
+          }
+
+          var oObj = oContext.getObject();
+          aSelecionados.push(oObj);
+
+          if (!sObjectId) {
+            sObjectId = oObj.lpn;
           }
         }
 
         if (aSelecionados.length > 0) {
-          // Salva os selecionados em um modelo global (JSONModel)
           var oModelSelecionados = new sap.ui.model.json.JSONModel(
             aSelecionados
           );
@@ -50,7 +52,6 @@ sap.ui.define(
             .getCore()
             .setModel(oModelSelecionados, "SelecionadosParaTransporte");
 
-          // Navega para a tela de detalhe (Object)
           this.getRouter().navTo(
             "object",
             {
@@ -72,7 +73,7 @@ sap.ui.define(
       onInit: function () {
         this.byId("page").addStyleClass("zoom70");
         var oViewModel;
-
+        debugger;
         // keeps the search state
         this._aTableSearchState = [];
 
@@ -90,6 +91,14 @@ sap.ui.define(
           tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
         });
         this.setModel(oViewModel, "worklistView");
+        // ✅ Modelo nomeado com dados vazios para garantir que a tabela comece em branco
+        //var oEmptyModel = new JSONModel({ results: [] });
+        //this.getView().setModel(oEmptyModel);
+
+        // ✅ Modelo base de LPN (vazio também)
+        //var oMaterialsModel = new JSONModel({ materialsLPN: [] });
+        //this.getView().setModel(oMaterialsModel, "materialsLPN");
+
         // Modelo nomeado para materiais
         var oMaterialsModel = new JSONModel({
           materialsLPN: [{ material: "12345" }, { material: "67890" }],
@@ -101,29 +110,8 @@ sap.ui.define(
         // oODataModel.read("/ZC_SDM_MOV_LPN", {                                   -- RVC:05.06.2025
         oODataModel.read("/ZC_SDM_MOVLPN", {
           success: function (oData) {
-            // Verifica se o retorno está vazio
-            var that = this;
-            if (!oData.results || oData.results.length === 0) {
-                // Só carrega mock em DEV/local
-                if (window.location.hostname === "localhost") {
-                    var oMockModel = new sap.ui.model.json.JSONModel();
-                    oMockModel.loadData("localService/locmockserver.json", null, false);
-                    that.getView().setModel(oMockModel);
-                    // No Worklist.controller.js
-                    this.getOwnerComponent().setModel(oMockModel, "MovLpn");
-                }
-            }
-
-            // Se houver dados reais, nada muda
             var aDepositos = [];
             var oDepositosMap = {};
-           // Passo 2: Veja os valores reais de DU nos dados retornados
-            console.log("Dados retornados do OData:", oData.results);
-            // Você pode filtrar só os campos DU para ver rapidamente:
-            console.log("Valores de DU:", oData.results.map(function(item){ return item.DU; }));
-
-
-
 
             oData.results.forEach(function (item) {
               if (
@@ -137,6 +125,11 @@ sap.ui.define(
                 });
               }
             });
+            //          oModel.read("/ZC_SDM_MOVLPN", {
+            //            success: function (oData) {
+            //              var oRawModel = new sap.ui.model.json.JSONModel(oData.results);
+            //              this.getView().setModel(oRawModel, "rawModel");
+
             var oDepositosModel = new sap.ui.model.json.JSONModel(aDepositos);
             this.getView().setModel(oDepositosModel, "DepositosDestino");
           }.bind(this),
@@ -156,7 +149,66 @@ sap.ui.define(
           },
           this
         );
+
+        var oModelDU = new sap.ui.model.json.JSONModel([
+          { key: "TD.", text: "Todos." },
+          { key: "LIB.", text: "LIB." },
+          { key: "BLOQ.", text: "BLOQ." },
+        ]);
+        this.getView().setModel(oModelDU, "DUFilter");
       },
+      onChangeDU: function (oEvent) {
+        var sSelectedKey = oEvent.getSource().getSelectedKey();
+        var oTable = this.byId("table");
+        var oBinding = oTable.getBinding("items");
+
+        if (sSelectedKey === "TD.") {
+          // Se for "Todos", limpa o filtro
+          oBinding.filter([]);
+        } else {
+          // Cria o filtro para o campo DU
+          var oFilter = new sap.ui.model.Filter(
+            "DU",
+            sap.ui.model.FilterOperator.EQ,
+            sSelectedKey
+          );
+          oBinding.filter([oFilter]);
+        }
+
+        sap.m.MessageToast.show("Filtro aplicado para DU: " + sSelectedKey);
+      },
+      /*    onRefreshPress: function () {
+        var oView = this.getView();
+
+        // Limpar Select DU
+        this.byId("idSelectDU").setSelectedKey("TD.");
+        this.getModel("worklistView").setProperty("/duSelecionado", "TD.");
+
+        // Limpar campos de busca (SearchFields e Input)
+        this.byId("searchFieldMaterial").setValue("");
+        this.byId("searchLoteSDM").setValue("");
+        this.byId("searchDepOrigem").setValue("");
+        this.byId("searchPosOrigem").setValue("");
+        this.byId("inputMaterial").setValue("");
+
+        // Limpar array de materiais digitados (se você estiver usando)
+        var oMaterialsModel = oView.getModel("materialsLPN");
+        if (oMaterialsModel) {
+          oMaterialsModel.setProperty("/materialsLPN", []);
+        }
+        // Reaplica o filtro da tabela com base em lista vazia
+        this.onShowArray(); // isso limpa o filtro de LPN se não houver mais itens
+
+        // Limpar filtros da tabela
+        var oTable = this.byId("table");
+        var oBinding = oTable.getBinding("items");
+        if (oBinding) {
+          oBinding.filter([]);
+          oBinding.refresh(); // Faz refresh dos dados no backend
+        }
+
+        sap.m.MessageToast.show("Tela redefinida e dados atualizados.");  
+      },*/
 
       /* =========================================================== */
       /* event handlers                                              */
@@ -275,104 +327,450 @@ sap.ui.define(
             oCheckBox.getSelected()
           );
       },
+      /**        var oTable = this.byId("table");
+        var aItems = oTable.getItems();
+        var bAllSelected =
+          aItems.length > 0 &&
+          aItems.every(function (oItem) {
+            var oContext = oItem.getBindingContext();
+            return oContext && oContext.getProperty("selected");
+          });
+        this.byId("headerCheckBox").setSelected(bAllSelected);
+      },*/
 
-      onSearch: function (oEvent) {
-        /*        if (oEvent.getParameters().refreshButtonPressed) {
-          // Search field's 'refresh' button has been pressed.
-          // This is visible if you select any main list item.
-          // In this case no new search is triggered, we only
-          // refresh the list binding.
-          this.onRefresh();
-        } else {
-          var aTableSearchState = [];
-          var sQuery = oEvent.getParameter("query");
+      onHeaderCheckBoxSelect: function (oEvent) {
+        var bSelected = oEvent.getParameter("selected");
+        var oTable = this.byId("table");
+        var aItems = oTable.getItems();
 
-          if (sQuery && sQuery.length > 0) {
-            aTableSearchState = [
-              new Filter("lpn", FilterOperator.Contains, sQuery),
-              new sap.ui.model.Filter("lote_sdm", sap.ui.model.FilterOperator.Contains, sQuery),
-            ];
+        aItems.forEach(function (oItem) {
+          var oContext = oItem.getBindingContext();
+          if (oContext) {
+            oContext
+              .getModel()
+              .setProperty(oContext.getPath() + "/selected", bSelected);
           }
-          this._applySearch(aTableSearchState);
-        }
+        });
       },
-  */
 
-        // Descobre qual SearchField disparou o evento
-        var sId = oEvent.getSource().getId();
-        var sQuery =
-          oEvent.getParameter("query") || oEvent.getSource().getValue();
+      onSearch: function () {
+        var oView = this.getView();
+        var oTable = this.byId("table");
+        var oBinding = oTable.getBinding("items");
+
+        var sCentro = oView.byId("searchFieldCentro").getValue().trim();
+        var sMaterial = oView.byId("searchFieldMaterial").getValue().trim();
+        var sLote = oView.byId("searchLoteSDM").getValue().trim();
+
         var aFilters = [];
 
-        // Exemplo de debug:
-        console.log("SearchField acionado:", sId);
+        if (sCentro) {
+          aFilters.push(
+            new sap.ui.model.Filter("centro", FilterOperator.Contains, sCentro)
+          );
+        }
 
-        // Decide o filtro conforme o campo
-        if (sId.indexOf("searchFieldMaterial") !== -1) {
-          // Filtro para material
+        if (sMaterial) {
           aFilters.push(
             new sap.ui.model.Filter(
               "material",
-              sap.ui.model.FilterOperator.Contains,
-              sQuery
+              FilterOperator.Contains,
+              sMaterial
             )
-          );
-        } else if (sId.indexOf("searchLoteSDM") !== -1) {
-          // Filtro para lote_sdm
-          aFilters.push(
-            new sap.ui.model.Filter(
-              "lote_sdm",
-              sap.ui.model.FilterOperator.Contains,
-              sQuery
-            )
-          );
-        } else if (sId.indexOf("searchDepOrigem") !== -1) {
-          // Filtro para deposito_origem
-          aFilters.push(
-            new sap.ui.model.Filter(
-              "deposito_origem",
-              sap.ui.model.FilterOperator.Contains,
-              sQuery
-            )
-          );
-        } else {
-          // Filtro geral (exemplo: busca em vários campos)
-          aFilters.push(
-            new sap.ui.model.Filter({
-              filters: [
-                new sap.ui.model.Filter(
-                  "material",
-                  sap.ui.model.FilterOperator.Contains,
-                  sQuery
-                ),
-                new sap.ui.model.Filter(
-                  "lote_sdm",
-                  sap.ui.model.FilterOperator.Contains,
-                  sQuery
-                ),
-                new sap.ui.model.Filter(
-                  "posicao_origem",
-                  sap.ui.model.FilterOperator.Contains,
-                  sQuery
-                ),
-              ],
-              and: false,
-            })
           );
         }
 
+        if (sLote) {
+          aFilters.push(
+            new sap.ui.model.Filter("lote_sdm", FilterOperator.Contains, sLote)
+          );
+        }
+
+        oBinding.filter(aFilters);
+      },
+      onFilterTabelaCompleta: function () {
+        var oView = this.getView();
         var oTable = this.byId("table");
         var oBinding = oTable.getBinding("items");
-        oBinding.filter(aFilters, "Application");
+
+        var sCentro = oView.byId("searchFieldCentro").getValue().trim();
+        var sMaterial = oView.byId("searchFieldMaterial").getValue().trim();
+        var sLote = oView.byId("searchLoteSDM").getValue().trim();
+        var sDeposito = oView.byId("idSelectDeposito").getSelectedKey();
+        var sPosicao = oView.byId("idComboPosicao").getSelectedKey();
+        var sDU = oView.byId("idSelectDU").getSelectedKey();
+
+        // ✅ Se centro estiver vazio, não permite buscar 21062025 1018
+        if (!sCentro) {
+          sap.m.MessageToast.show("Preencha o Centro para buscar os dados.");
+          return;
+        }
+
+        var aFilters = [];
+
+        if (sCentro) {
+          aFilters.push(
+            new sap.ui.model.Filter("centro", FilterOperator.Contains, sCentro)
+          );
+        }
+
+        if (sMaterial) {
+          aFilters.push(
+            new sap.ui.model.Filter(
+              "material",
+              FilterOperator.Contains,
+              sMaterial
+            )
+          );
+        }
+
+        if (sLote) {
+          aFilters.push(
+            new sap.ui.model.Filter("lote_sdm", FilterOperator.Contains, sLote)
+          );
+        }
+
+        if (sDeposito) {
+          aFilters.push(
+            new sap.ui.model.Filter(
+              "deposito_origem",
+              FilterOperator.EQ,
+              sDeposito
+            )
+          );
+        }
+
+        if (sPosicao) {
+          aFilters.push(
+            new sap.ui.model.Filter(
+              "posicao_origem",
+              FilterOperator.EQ,
+              sPosicao
+            )
+          );
+        }
+
+        if (sDU && sDU !== "TD.") {
+          aFilters.push(new sap.ui.model.Filter("DU", FilterOperator.EQ, sDU));
+        }
+
+        oBinding.filter(aFilters);
       },
-      /**
-       * Event handler for refresh event. Keeps filter, sort
-       * and group settings and refreshes the list binding.
-       * @public
-       */
-      onRefresh: function () {
+
+      onChangePosicao: function () {
+        var sPosicao = this.byId("idComboPosicao").getSelectedKey(); // ou getValue() se quiser o texto
+        this.applyAllFilters(); // caso use filtro centralizado
+      },
+      //  ==============================================================================================
+      onCentroChangeComFiltro: function () {
+        var oView = this.getView();
+        var oRawModel = oView.getModel("rawModel");
+        var sCentro = oView.byId("searchFieldCentro").getValue().trim();
+
+        if (!oRawModel) {
+          console.warn("rawModel não definido.");
+          return;
+        }
+
+        var aOriginalData = oRawModel.getData();
+        var aFiltrados = aOriginalData.filter(function (item) {
+          return item.centro === sCentro;
+        });
+
+        // Garante que filteredModel exista
+        var oFilteredModel = oView.getModel("filteredModel");
+        if (!oFilteredModel) {
+          oFilteredModel = new sap.ui.model.json.JSONModel([]);
+          oView.setModel(oFilteredModel, "filteredModel");
+        }
+
+        //oFilteredModel.setData(aFiltrados);
+
+        // Atualiza os combos de posição e depósito como antes...
+
+        oView.getModel("filteredModel").setData(aFiltrados);
+
+        // Atualiza selects
+        var aPosicoes = [],
+          aDepositos = [];
+        var mapPos = {},
+          mapDep = {};
+
+        aFiltrados.forEach(function (item) {
+          if (item.posicao_origem && !mapPos[item.posicao_origem]) {
+            mapPos[item.posicao_origem] = true;
+            aPosicoes.push({
+              key: item.posicao_origem,
+              text: item.posicao_origem,
+            });
+          }
+          if (item.deposito_origem && !mapDep[item.deposito_origem]) {
+            mapDep[item.deposito_origem] = true;
+            aDepositos.push({
+              key: item.deposito_origem,
+              text: item.deposito_origem,
+            });
+          }
+        });
+
+        oView.setModel(
+          new sap.ui.model.json.JSONModel(aPosicoes),
+          "PosicaoFilter"
+        );
+        oView.setModel(
+          new sap.ui.model.json.JSONModel(aDepositos),
+          "DepositoFilter"
+        );
+      },
+      onCentroChange: function (oEvent) {
+        var sCentro = oEvent.getSource().getValue().trim();
+        var oView = this.getView();
+
+        // Limpa se o campo estiver vazio
+        if (!sCentro) {
+          this._applySearch([]);
+
+          // Limpa os modelos auxiliares
+          var oFiltered = oView.getModel("filteredModel");
+          if (oFiltered) {
+            oFiltered.setData([]);
+          }
+
+          return;
+        }
+
+        if (!sCentro) {
+          // Limpa filtro se o campo estiver vazio
+          this._applySearch([]);
+          return;
+        }
+
+        // Cria filtro para o campo 'centro'
+        var aFilters = [
+          new sap.ui.model.Filter(
+            "centro",
+            sap.ui.model.FilterOperator.Contains,
+            sCentro
+          ),
+        ];
+
+        // Aplica filtro na tabela
+        this._applySearch(aFilters);
+
+        // Cria ou carrega o rawModel
+        var oRawModel = oView.getModel("rawModel");
+
+        if (!oRawModel) {
+          var oModel = oView.getModel(); // OData model
+          oModel.read("/ZC_SDM_MOVLPN", {
+            urlParameters: {
+              $top: "5000",
+            },
+            success: function (oData) {
+              var oJson = new sap.ui.model.json.JSONModel(oData.results);
+              oView.setModel(oJson, "rawModel");
+
+              // Aplica filtro após carregar dados
+              this.onCentroChangeComFiltro();
+            }.bind(this),
+            error: function () {
+              sap.m.MessageToast.show("Erro ao carregar dados completos.");
+            },
+          });
+        } else {
+          // Se já tem dados carregados, aplica o filtro direto
+          this.onCentroChangeComFiltro();
+        }
+      },
+
+onRefreshPress: function () {
+  var oView = this.getView();
+
+  // 1. Limpa todos os campos do cabeçalho
+  oView.byId("searchFieldCentro")?.setValue("");
+  oView.byId("searchFieldMaterial")?.setValue("");
+  oView.byId("searchLoteSDM")?.setValue("");
+  oView.byId("idSelectDeposito")?.setSelectedKey("");
+  oView.byId("idComboPosicao")?.setSelectedKey("");
+  oView.byId("idSelectDU")?.setSelectedKey("TD.");
+  oView.byId("inputMaterial")?.setValue("");
+
+  // 2. Limpa modelo auxiliar de materiais digitados
+  var oMaterialsModel = oView.getModel("materialsLPN");
+  if (oMaterialsModel) {
+    oMaterialsModel.setData({ materialsLPN: [] });
+  }
+
+  // 3. Restaura os dados originais (4900 registros) do rawModel no filteredModel
+  var oRawModel = oView.getModel("rawModel");
+  if (oRawModel && Array.isArray(oRawModel.getData())) {
+    var oFilteredModel = oView.getModel("filteredModel");
+    if (!oFilteredModel) {
+      oFilteredModel = new sap.ui.model.json.JSONModel();
+      oView.setModel(oFilteredModel, "filteredModel");
+    }
+    oFilteredModel.setData(oRawModel.getData());
+  }
+
+  // 4. Limpa filtros visuais da tabela
+  var oTable = oView.byId("table");
+  var oBinding = oTable.getBinding("items");
+  if (oBinding) {
+    oBinding.filter([]);
+    oBinding.refresh();
+  }
+
+  // 5. Mensagem de feedback
+  sap.m.MessageToast.show("Aplicação reiniciada com sucesso.");
+},
+
+
+      /* 
+----->  onCentroChange: function (oEvent) {
+        var sCentro = oEvent.getSource().getValue().trim();
+
+        if (!sCentro) {
+          // Limpa filtro se o campo estiver vazio
+          this._applySearch([]);
+          return;
+        }
+
+        // Cria filtro para o campo 'centro'
+        var aFilters = [
+          new sap.ui.model.Filter(
+            "centro",
+            sap.ui.model.FilterOperator.Contains,
+            sCentro
+          ),
+        ];
+
+        // Aplica filtro na tabela
+        this._applySearch(aFilters);
+
+        // 🔧 Verifica se o rawModel já existe
+        var oRawData = this.getView().getModel("rawModel");
+        if (!oRawData) {
+          var oBinding = this.byId("table").getBinding("items");
+          if (oBinding) {
+            var aData = oBinding.getModel().getProperty(oBinding.getPath());
+            if (aData) {
+              var oRawModel = new sap.ui.model.json.JSONModel(aData);
+              this.getView().setModel(oRawModel, "rawModel");
+            }
+          }
+        }
+        this.onCentroChangeComFiltro();
+      },
+
+
+-----> onCentroChangeComFiltro: function () {
+        var oView = this.getView();
+        var oRawModel = oView.getModel("rawModel");
+        var sCentro = oView.byId("searchFieldCentro").getValue().trim();
+        var aOriginalData = oView.getModel("rawModel").getData();
+
+        if (!sCentro) {
+          oView.getModel("filteredModel").setData([]); // Limpa a tabela
+          return;
+        }
+
+        // Aplica filtro de Centro
+        var aFiltrados = aOriginalData.filter(function (item) {
+          return item.centro === sCentro;
+        });
+
+
+
+        oView.getModel("filteredModel").setData(aFiltrados);
+
+        // Atualiza selects
+        var aPosicoes = [],
+          aDepositos = [];
+        var mapPos = {},
+          mapDep = {};
+
+        aFiltrados.forEach(function (item) {
+          if (item.posicao_origem && !mapPos[item.posicao_origem]) {
+            mapPos[item.posicao_origem] = true;
+            aPosicoes.push({
+              key: item.posicao_origem,
+              text: item.posicao_origem,
+            });
+          }
+          if (item.deposito_origem && !mapDep[item.deposito_origem]) {
+            mapDep[item.deposito_origem] = true;
+            aDepositos.push({
+              key: item.deposito_origem,
+              text: item.deposito_origem,
+            });
+          }
+        });
+
+        oView.setModel(
+          new sap.ui.model.json.JSONModel(aPosicoes),
+          "PosicaoFilter"
+        );
+        oView.setModel(
+          new sap.ui.model.json.JSONModel(aDepositos),
+          "DepositoFilter"
+        );
+      },
+
+
+
+       
+
+----->   onRefreshPress: function () {
+        var oView = this.getView();
+
+        // Limpa campos de pesquisa LINHA1
+        oView.byId("searchFieldCentro").setValue("");
+        oView.byId("searchFieldMaterial").setValue("");
+        oView.byId("searchLoteSDM").setValue("");
+        // Limpa campos de pesquisa LINHA2
+        oView.byId("idSelectDeposito").setValue("");
+        oView.byId("idComboPosicao").setValue("");
+        oView.byId("inputMaterial").setValue("");
+
+        // Limpa filtros no modelo "materialsLPN"
+        var oMaterialsModel = oView.getModel("materialsLPN");
+        if (oMaterialsModel) {
+          oMaterialsModel.setProperty("/materialsLPN", []);
+        }
+        // Restaura o filtro DEPOSITO para "Todos"
+        oView.byId("idSelectDeposito").setSelectedKey("TD.");
+        this.getModel("worklistView").setProperty("/duSelecionado", "TD.");
+        // Restaura o filtro POSICAO para "Todos"
+        oView.byId("idComboPosicao").setSelectedKey("TD.");
+        this.getModel("worklistView").setProperty("/duSelecionado", "TD.");
+        // Restaura o filtro DU para "Todos"
+        oView.byId("idSelectDU").setSelectedKey("TD.");
+        this.getModel("worklistView").setProperty("/duSelecionado", "TD.");
+
+        // Limpa os filtros da tabela
         var oTable = this.byId("table");
-        oTable.getBinding("items").refresh();
+        var oBinding = oTable.getBinding("items");
+        if (oBinding) {
+          oBinding.filter([]); // Remove todos os filtros
+          oBinding.refresh(); // Força reload
+        }
+
+        sap.m.MessageToast.show("Tabela e filtros resetados.");
+      },   */
+
+      onSelectChange: function (oEvent) {
+        var oTable = oEvent.getSource();
+        var aSelectedItems = oTable.getSelectedItems();
+
+        var aSelecionados = aSelectedItems.map(function (oItem) {
+          return oItem
+            .getBindingContext("SelecionadosParaTransporte")
+            .getObject();
+        });
+
+        // Exemplo: salvar num modelo global
+        var oModelSelecionados = new sap.ui.model.json.JSONModel(aSelecionados);
+        sap.ui.getCore().setModel(oModelSelecionados, "SelecionadosParaGravar");
       },
 
       /* =========================================================== */
@@ -391,8 +789,8 @@ sap.ui.define(
             objectId: oItem
               .getBindingContext()
               .getPath()
-      //      .substring("/ZC_SDM_MOV_LPN".length),                               -- RVC:05.06.2025
-              .substring("/ZC_SDM_MOVLPN".length),              
+              //      .substring("/ZC_SDM_MOV_LPN".length),                               -- RVC:05.06.2025
+              .substring("/ZC_SDM_MOVLPN".length),
           },
           true
         );

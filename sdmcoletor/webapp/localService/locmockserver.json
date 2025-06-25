@@ -42,8 +42,8 @@
     "lote_sdm": "LSDM1",
     "DU": "BLOQ.",
     "Quant": 0,
-    "Quantidade": 10,
-    "StckQuant": 0,
+    "Quantidade": 3,
+    "StckQuant": 3,
     "unidade_medida": "",
     "lnhConst": 1
   
@@ -59,7 +59,7 @@
     "lote_sdm": "LSDM1",
     "DU": "BLOQ.",
     "Quant": 0,
-    "Quantidade": 10,
+    "Quantidade": 3,
     "StckQuant": 0,
     "unidade_medida": "",
     "lnhConst": 1

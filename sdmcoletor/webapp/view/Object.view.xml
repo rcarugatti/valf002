@@ -13,52 +13,86 @@
         toggleHeaderOnTitleClick="false"
         busy="{objectView>/busy}"
         busyIndicatorDelay="{objectView>/delay}" 
-        showFooter="true">
+        showFooter="false">
+        <!-- Cabeçalho expandido acima dos botões -->
+        <semantic:titleExpandedContent>
+            <HBox id="idHbx1">
+                <Title  id="idTtl1"  text="Movimentação de LPNs" level="H3" />
+            </HBox>
+            <HBox  id="idHbx2">
+
+                <Title id="idTx1" text="Trabalhando com DU: " level="H2" />
+                <Title id="idTx2"  text="{DUModel>/duAtiva}" level="H4"/>
+            </HBox>
+        </semantic:titleExpandedContent>
         <semantic:titleHeading>
-            <Title id="idLpnTitle" title="{i18n>lpnLabel}" text="{lpn}" level="H3"/>
+            <Title id="idLpnTitle" title="{i18n>worklistTitle}" text="{lpn}" level="H3"/>
         </semantic:titleHeading>
         <semantic:headerContent>
             <FlexBox id="idMainFlexBox" width="100%" height="auto" alignItems="Start">
-                <Panel id="idMainPanel" backgroundDesign="Transparent">
-                    <Button
-                    id="idVoltarWorklistButton"
-                    icon="sap-icon://nav-back"
-                    text="Voltar"
-                    press=".onNavBack"/>
-                </Panel>
-                <Panel id="idMainPane1" backgroundDesign="Transparent">
-                    <Button
-                    id="idAplicarButton"
-                    text="Aplicar"
-                    type="Emphasized"
-                    press=".onAplicarButtonPress"/>
-                </Panel>
-                <Panel id="idMainPane2" backgroundDesign="Transparent">
-                    <!-- Pesquisa por posição Destino
-                    <Label id="idLabelPosDes" text="posição Destino"/>   -->
-                    <Label text="Deposito Destino :  ." labelFor="idSelectPosDestino"/>
-                    <Select
-                         id="idSelectDepositoDestino"
-                         items="{ path: 'DepPosData>/' }">
-                        <core:Item key="{DepPosData>WERKS}" text="{DepPosData>POSIT}" templateShareable="false"/>
-                    </Select>
-                    <!-- <Select
-                         id="idSelectPosDestino"
-                         width="3.5rem"                   
-                         items="{path:'DepPosData>/' }">
-                        <core:Item key="{DepPosData>WERKS}" text="{DepPosData>LGORT}" templateShareable="false"/>
-                    </Select>-->
-                </Panel>
-                <Panel id="idMainPanel3" backgroundDesign="Transparent">
-                    <!-- Pesquisa por deposito Destino  
-                    <Label id="idLabelDepDes" text="Depósito Destino"/>   -->
-                    <Label text="Posição Destino :  ." labelFor="idSelectDepositoDestino"/>
-                    <Select
-                        id="idSelectPosDestino"
-                        width="10rem"
-                        items="{PosDestinoConcat>/}">
-                        <core:Item key="{PosDestinoConcat>POSICAO}" text="{PosDestinoConcat>TEXTO}" />
-                    </Select>
+                <Panel id="idMainPanel1" backgroundDesign="Transparent">
+                    <HBox  id="idHbx3" justifyContent="Start" alignItems="Center" class="sapUiSmallMarginBottom" >
+                        <VBox  id="idVVx1" class="sapUiSmallMarginEnd" >
+                                                    <Label  id="idLbTxl1" text=" "/>
+                            <Button
+                                id="idVoltarWorklistButton"
+                                icon="sap-icon://nav-back"
+                              
+                                press=".onNavBack"/>
+                        </VBox>
+                        <VBox  id="idVbx2" class="sapUiSmallMarginEnd" >
+                        <Label  id="idLbTxl2" text=" "/>
+                            <Button
+                                id="idAplicarButton"
+                                text="Aplicar"
+                                type="Emphasized"
+                                press=".onAplicarButtonPress"/>
+                        </VBox>
+                        <VBox  id="idVbx1" class="sapUiSmallMarginEnd" >
+                            <Label  id="idLbTx1" text="Deposito Destino :  ." labelFor="idSelectHeaderDepDestino"/>
+                            <!--  
+                            <Select
+                            id="idSelectHeaderDepDestino"
+                            items="{DepDestinoConcat>/}"
+                            selectedKey="{/depositoSelecionado}"
+                            change=".onChangeDepoDestHeader">
+                                <core:Item key="{DepDestinoConcat>DEPOSITO}" text="{DepDestinoConcat>TEXTO}" />
+                            </Select>   -->
+                            <ComboBox
+                                id="idSelectHeaderDepDestino"
+                                width="5rem"
+                                 selectedKey="{/depositoSelecionado}"
+                                change=".onChangeDepoDestHeader"
+                                placeholder="Todos"  
+                               items="{DepDestinoConcat>/}">
+                                <core:Item  id="idCr31"  key="{DepDestinoConcat>DEPOSITO}" text="{DepDestinoConcat>TEXTO}" />
+                            </ComboBox>
+                        </VBox>
+                        <VBox id="idVbx3" class="sapUiSmallMarginEnd" >
+                            <Label  id="idLblTx1"  text="Posição Destino :  ." labelFor="idSelectPosDestino"/>
+                            <!-- Cabeçalho expandido acima dos botões 
+                            <Select
+                                id="idSelectPosDestino"
+                                width="10rem"
+                                items="{PosDestinoConcat>/}">
+                                <core:Item key="{PosDestinoConcat>POSICAO}" text="{PosDestinoConcat>TEXTO}" />
+                            </Select> -->
+                            <ComboBox
+                                id="idSelectPosDestino"
+                                width="5rem"
+                                items="{PosDestinoConcat>/}"                                
+                                selectedKey="{/depositoSelecionado}"
+                                change=".onChangePosiDestHeader"
+                                placeholder="Todos"  
+                               >
+                                <core:Item  id="idCr1"  key="{PosDestinoConcat>POSICAO}" text="{PosDestinoConcat>TEXTO}" />
+                            </ComboBox>
+                        </VBox>
+                        <VBox id="idVbx4" class="sapUiSmallMarginEnd" >
+                               <Label  id="idLbBtl2" text=" "/>
+                            <Button  id="idBt1" text="Save" press=".onSalvarPress" type="Emphasized" icon="sap-icon://save" />
+                        </VBox>
+                    </HBox>
                 </Panel>
             </FlexBox>
         </semantic:headerContent>
@@ -67,17 +101,20 @@
                 id="objectTable"
                 width="100%"
                 items="{
-                path: 'SelecionadosParaTransporte>/'    
+                path: 'SelecionadosParaTransporte>/' ,
+                        sorter: [
+            { path: 'centro',          descending: false },
+            { path: 'deposito_origem', descending: false },
+            { path: 'posicao_origem',  descending: false }]    
                 }" 
                 noDataText="{worklistView>/tableNoDataText}"
                 busyIndicatorDelay="{worklistView>/tableBusyDelay}"
+                   mode="MultiSelect"
+                   selectionChange=".onSelectChange"
                 growing="true"
                 growingScrollToLoad="true"
                 updateFinished=".onUpdateFinished">
-                <columns class="sapUiResponsiveMargin">
-                    <Column id="selectColumnObj" width="2rem">
-                        <Text text=" "/>
-                    </Column>
+                <columns>
                     <Column id="nameColumnObj">
                         <Text text="{i18n>tableNameColumnTitle}" id="nameColumnTitleObj"/>
                     </Column>
@@ -90,9 +127,6 @@
                     <Column id="loteSDMColumnObj">
                         <Text text="{i18n>lSDMLabel}" id="loteSDMColumnTitleObj"/>
                     </Column>
-                    <Column id="DUColumnObj">
-                        <Text text="{i18n>DULabel}" id="DUColumnTitleObj"/>
-                    </Column>
                     <Column id="depositoDestinoColumnObj">
                         <Text text="{i18n>depositoDestinoLabel}" id="depositoDestinoColumnTitleObj"/>
                     </Column>
@@ -104,49 +138,44 @@
                     </Column>
                 </columns>
                 <items>
-                    <ColumnListItem
+                    <ColumnListItem  id="idCl1" 
                         type="Inactive"
-                        press=".onPresst" >
+                        press=".onPresst" 
+                         highlight="{= ${SelecionadosParaTransporte>DU} === 'BLOQ.' ? 'Error' : ${SelecionadosParaTransporte>DU} === 'LIB.' ? 'Success' : 'None'}">
                         <cells>
-                            <CheckBox select=".onSelectCheckBox"/>
-                    <!--    <Text text=" "/>   
-                            <CheckBox   selected="{selected}" select=".onSelectCheckBox"/> -->
-                            <Text text="{SelecionadosParaTransporte>lpn}"/>
-                            <Text text="{SelecionadosParaTransporte>deposito_origem}"/>
-                            <Text text="{SelecionadosParaTransporte>posicao_origem}"/>
-                            <!-- Adicione os campos que desejar -->
-                            <Text text="{SelecionadosParaTransporte>lote_sdm}"/>
-                            <Text text="{SelecionadosParaTransporte>DU}"/>
+                            <Text id="idTxx2"  text="{SelecionadosParaTransporte>lpn}"/>
+                            <Text id="idTxx3"  text="{SelecionadosParaTransporte>deposito_origem}" width="1.6rem"/>
+                            <Text id="idTxx1"  text="{SelecionadosParaTransporte>posicao_origem}"  width="3.2rem"/>
+                            <Text id="idTxx4"  text="{SelecionadosParaTransporte>lote_sdm}"        width="4.8rem"/>
                             <Select
                                 id="idSelectDepDestino"
-                                selectedKey="{SelecionadosParaTransporte>deposito_destino}"
-                                width="3.5rem"
+                                selectedKey="{SelecionadosParaTransporte>/deposito_destino}"
+                                width="7.5rem"
                                 change=".onChangeDepositoDestino"
-                                items="{path:'DepPosData>/' }">
-                                <core:Item key="{DepPosData>WERKS}" text="{DepPosData>LGORT}" templateShareable="false"/>
+                                items="{path:'DepDataLinha>/' }">
+                                <core:Item  id="idCR21"  key="{DepDataLinha>deposito_origem}" text="{DepDataLinha>deposito_origem}" templateShareable="false"/>
                             </Select>
                             <Select
-                                selectedKey="{SelecionadosParaTransporte>posicao_origem}"
-                                 width="3.5rem"
-                                change=".onChangeposicaoDestino"
-                                items="{
-                                    path: 'DepPosData/'
-                                }">
-                                <core:Item key="{DepPosData>centro}" text="{DepPosData>posicao_origem}" templateShareable="false"/>
+                                id="idSelectPosDest"
+                                selectedKey="{SelecionadosParaTransporte>posicao_destino}"
+                                width="7.5rem"
+                                items="{path:'DepPosDataLinha>/' }"
+                                change=".onChangeposicaoDestino">
+                                <core:Item  id="idCr41"  key="{DepPosDataLinha>posicao_destino}" text="{DepPosDataLinha>posicao_destino}" templateShareable="false" />
                             </Select>
-                            <Text text="{SelecionadosParaTransporte>material}"/>
+                            <Text id="idTx21"  text="{SelecionadosParaTransporte>material}" width="4rem"/>
                         </cells>
                     </ColumnListItem>
                 </items>
             </Table>
         </semantic:content>
-  <!--      <semantic:sendEmailAction>
+        <!--      <semantic:sendEmailAction>
             <semantic:SendEmailAction id="shareEmail" press=".onShareEmailPress"/>
         </semantic:sendEmailAction>
-         Custom Footer Content-->
+         Custom Footer Content
         <semantic:footerCustomActions>
             <Button text="Save" press=".onSalvarPress" type="Emphasized" icon="sap-icon://save" />
-            <Button text="Cancel" />
-        </semantic:footerCustomActions>
+            <Button text="Cancel" press=".onNavBack" />
+        </semantic:footerCustomActions>  -->
     </semantic:SemanticPage>
 </mvc:View>

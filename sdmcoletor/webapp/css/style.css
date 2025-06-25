@@ -1,7 +1,7 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Cabin:ital,wght@0,400..700;1,400..700&display=swap');
 body, .sapMText, .sapMLabel, .sapMInputBase, .sapMBtnInner, .sapMListTblCell, .sapMTableCell {
-    font-size: 0.5rem !important;
+    font-size: 0.7rem !important;
     font-family: "Cabin", sans-serif;
     font-weight: 400;
 }
@@ -14,16 +14,16 @@ body, .sapMText, .sapMLabel, .sapMInputBase, .sapMBtnInner, .sapMListTblCell, .s
 }
 .sapUiTableHeaderDataCell .sapMText, .sapMColumnHeader .sapMText {
     font-weight: bold;
-    font-size: 0.5rem !important;
+    font-size: 0.7rem !important;
     color: #3118ea;
 }
 .sapMBtnInner {
-    font-size: 0.5rem !important;
+    font-size: 0.7rem !important;
     min-height: 1.5rem;
     padding: 0.2rem 0.5rem !important;
 }
 .sapMInputBaseInner {
-    font-size: 0.5rem !important;
+    font-size: 0.7rem !important;
     min-height: 1.5rem;
 }
 #container {
