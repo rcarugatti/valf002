@@ -20,7 +20,6 @@
                 <Title  id="idTtl1"  text="Movimentação de LPNs" level="H3" />
             </HBox>
             <HBox  id="idHbx2">
-
                 <Title id="idTx1" text="Trabalhando com DU: " level="H2" />
                 <Title id="idTx2"  text="{DUModel>/duAtiva}" level="H4"/>
             </HBox>
@@ -33,7 +32,7 @@
                 <Panel id="idMainPanel1" backgroundDesign="Transparent">
                     <HBox  id="idHbx3" justifyContent="Start" alignItems="Center" class="sapUiSmallMarginBottom" >
                         <VBox  id="idVVx1" class="sapUiSmallMarginEnd" >
-                                                    <Label  id="idLbTxl1" text=" "/>
+                            <Label  id="idLbTxl1" text=" "/>
                             <Button
                                 id="idVoltarWorklistButton"
                                 icon="sap-icon://nav-back"
@@ -41,7 +40,7 @@
                                 press=".onNavBack"/>
                         </VBox>
                         <VBox  id="idVbx2" class="sapUiSmallMarginEnd" >
-                        <Label  id="idLbTxl2" text=" "/>
+                            <Label  id="idLbTxl2" text=" "/>
                             <Button
                                 id="idAplicarButton"
                                 text="Aplicar"
@@ -89,7 +88,7 @@
                             </ComboBox>
                         </VBox>
                         <VBox id="idVbx4" class="sapUiSmallMarginEnd" >
-                               <Label  id="idLbBtl2" text=" "/>
+                            <Label  id="idLbBtl2" text=" "/>
                             <Button  id="idBt1" text="Save" press=".onSalvarPress" type="Emphasized" icon="sap-icon://save" />
                         </VBox>
                     </HBox>
@@ -147,22 +146,24 @@
                             <Text id="idTxx3"  text="{SelecionadosParaTransporte>deposito_origem}" width="1.6rem"/>
                             <Text id="idTxx1"  text="{SelecionadosParaTransporte>posicao_origem}"  width="3.2rem"/>
                             <Text id="idTxx4"  text="{SelecionadosParaTransporte>lote_sdm}"        width="4.8rem"/>
-                            <Select
-                                id="idSelectDepDestino"
-                                selectedKey="{SelecionadosParaTransporte>/deposito_destino}"
-                                width="7.5rem"
-                                change=".onChangeDepositoDestino"
-                                items="{path:'DepDataLinha>/' }">
-                                <core:Item  id="idCR21"  key="{DepDataLinha>deposito_origem}" text="{DepDataLinha>deposito_origem}" templateShareable="false"/>
-                            </Select>
-                            <Select
-                                id="idSelectPosDest"
-                                selectedKey="{SelecionadosParaTransporte>posicao_destino}"
-                                width="7.5rem"
-                                items="{path:'DepPosDataLinha>/' }"
-                                change=".onChangeposicaoDestino">
-                                <core:Item  id="idCr41"  key="{DepPosDataLinha>posicao_destino}" text="{DepPosDataLinha>posicao_destino}" templateShareable="false" />
-                            </Select>
+                            <ComboBox
+                                    id="idSelectDepDestino"
+                                    items="{DepDestinoConcat>/}"
+                                    selectedKey="{SelecionadosParaTransporte>deposito_destino}"
+                                    placeholder="-"
+                                    width="7.5rem"
+                                    change=".onChangeDepositoDestino">
+                                <core:Item id="tplDepDestino" key="{DepDestinoConcat>DEPOSITO}" text="{DepDestinoConcat>TEXTO}" />
+                            </ComboBox>
+                            <ComboBox
+                                    id="idSelectPosDest"
+                                    items="{PosDestinoConcatFull>/}"
+                                    selectedKey="{SelecionadosParaTransporte>posicao_destino}"
+                                    placeholder="-"
+                                    width="7.5rem"
+                                    change=".onChangeposicaoDestino">
+                                <core:Item id="tplPosDestino" key="{PosDestinoConcatFull>POSICAO}" text="{PosDestinoConcatFull>TEXTO}" />
+                            </ComboBox>
                             <Text id="idTx21"  text="{SelecionadosParaTransporte>material}" width="4rem"/>
                         </cells>
                     </ColumnListItem>

@@ -583,47 +583,46 @@ sap.ui.define(
         }
       },
 
-onRefreshPress: function () {
-  var oView = this.getView();
+      onRefreshPress: function () {
+        var oView = this.getView();
 
-  // 1. Limpa todos os campos do cabeçalho
-  oView.byId("searchFieldCentro")?.setValue("");
-  oView.byId("searchFieldMaterial")?.setValue("");
-  oView.byId("searchLoteSDM")?.setValue("");
-  oView.byId("idSelectDeposito")?.setSelectedKey("");
-  oView.byId("idComboPosicao")?.setSelectedKey("");
-  oView.byId("idSelectDU")?.setSelectedKey("TD.");
-  oView.byId("inputMaterial")?.setValue("");
+        // 1. Limpa todos os campos do cabeçalho
+        oView.byId("searchFieldCentro")?.setValue("");
+        oView.byId("searchFieldMaterial")?.setValue("");
+        oView.byId("searchLoteSDM")?.setValue("");
+        oView.byId("idSelectDeposito")?.setSelectedKey("");
+        oView.byId("idComboPosicao")?.setSelectedKey("");
+        oView.byId("idSelectDU")?.setSelectedKey("TD.");
+        oView.byId("inputMaterial")?.setValue("");
 
-  // 2. Limpa modelo auxiliar de materiais digitados
-  var oMaterialsModel = oView.getModel("materialsLPN");
-  if (oMaterialsModel) {
-    oMaterialsModel.setData({ materialsLPN: [] });
-  }
+        // 2. Limpa modelo auxiliar de materiais digitados
+        var oMaterialsModel = oView.getModel("materialsLPN");
+        if (oMaterialsModel) {
+          oMaterialsModel.setData({ materialsLPN: [] });
+        }
 
-  // 3. Restaura os dados originais (4900 registros) do rawModel no filteredModel
-  var oRawModel = oView.getModel("rawModel");
-  if (oRawModel && Array.isArray(oRawModel.getData())) {
-    var oFilteredModel = oView.getModel("filteredModel");
-    if (!oFilteredModel) {
-      oFilteredModel = new sap.ui.model.json.JSONModel();
-      oView.setModel(oFilteredModel, "filteredModel");
-    }
-    oFilteredModel.setData(oRawModel.getData());
-  }
+        // 3. Restaura os dados originais (4900 registros) do rawModel no filteredModel
+        var oRawModel = oView.getModel("rawModel");
+        if (oRawModel && Array.isArray(oRawModel.getData())) {
+          var oFilteredModel = oView.getModel("filteredModel");
+          if (!oFilteredModel) {
+            oFilteredModel = new sap.ui.model.json.JSONModel();
+            oView.setModel(oFilteredModel, "filteredModel");
+          }
+          oFilteredModel.setData(oRawModel.getData());
+        }
 
-  // 4. Limpa filtros visuais da tabela
-  var oTable = oView.byId("table");
-  var oBinding = oTable.getBinding("items");
-  if (oBinding) {
-    oBinding.filter([]);
-    oBinding.refresh();
-  }
+        // 4. Limpa filtros visuais da tabela
+        var oTable = oView.byId("table");
+        var oBinding = oTable.getBinding("items");
+        if (oBinding) {
+          oBinding.filter([]);
+          oBinding.refresh();
+        }
 
-  // 5. Mensagem de feedback
-  sap.m.MessageToast.show("Aplicação reiniciada com sucesso.");
-},
-
+        // 5. Mensagem de feedback
+        sap.m.MessageToast.show("Aplicação reiniciada com sucesso.");
+      },
 
       /* 
 ----->  onCentroChange: function (oEvent) {
@@ -759,18 +758,18 @@ onRefreshPress: function () {
       },   */
 
       onSelectChange: function (oEvent) {
-        var oTable = oEvent.getSource();
-        var aSelectedItems = oTable.getSelectedItems();
+        const oTable = oEvent.getSource(); // <Table>
+        // Contextos do binding principal (OData)
+        const aCtx = oTable.getSelectedContexts();
+        const aSelecionados = aCtx.map((c) => c.getObject());
 
-        var aSelecionados = aSelectedItems.map(function (oItem) {
-          return oItem
-            .getBindingContext("SelecionadosParaTransporte")
-            .getObject();
-        });
-
-        // Exemplo: salvar num modelo global
-        var oModelSelecionados = new sap.ui.model.json.JSONModel(aSelecionados);
-        sap.ui.getCore().setModel(oModelSelecionados, "SelecionadosParaGravar");
+        // Atualiza/Cria o modelo global que a próxima tela precisará
+        sap.ui
+          .getCore()
+          .setModel(
+            new sap.ui.model.json.JSONModel(aSelecionados),
+            "SelecionadosParaTransporte"
+          );
       },
 
       /* =========================================================== */

@@ -24,6 +24,8 @@ sap.ui.define(
           var aData = oModel.getData();
           aData.forEach(function (item) {
             item.selected = false;
+            item.deposito_destino = "";
+            item.posicao_destino  = "";
           });
           oModel.setData(aData);
         }
