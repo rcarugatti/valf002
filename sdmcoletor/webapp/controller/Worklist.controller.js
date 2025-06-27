@@ -584,6 +584,10 @@ sap.ui.define(
       },
 
       onRefreshPress: function () {
+
+        window.location.reload();
+        
+        /*
         var oView = this.getView();
 
         // 1. Limpa todos os campos do cabeçalho
@@ -621,7 +625,7 @@ sap.ui.define(
         }
 
         // 5. Mensagem de feedback
-        sap.m.MessageToast.show("Aplicação reiniciada com sucesso.");
+        sap.m.MessageToast.show("Aplicação reiniciada com sucesso."); */
       },
 
       /* 

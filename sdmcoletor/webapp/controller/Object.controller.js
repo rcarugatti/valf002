@@ -381,7 +381,7 @@ onAplicarButtonPress: function () {
         }
       },
 
-      /*  
+       
       onSalvarPress: function () {
         var oModel = this.getOwnerComponent().getModel("MovimentaLpn"); // Modelo do function import
         var oTable = this.byId("objectTable");
@@ -436,7 +436,7 @@ onAplicarButtonPress: function () {
           sap.m.MessageToast.show("Nenhuma linha selecionada.");
         }
       },
-*/
+
       onSelectChange: function (oEvent) {
         var oTable = oEvent.getSource();
         var aSelectedItems = oTable.getSelectedItems();
