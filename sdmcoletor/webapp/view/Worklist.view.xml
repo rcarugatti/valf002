@@ -18,7 +18,7 @@
         </semantic:titleSnappedContent>
         <semantic:headerContent>
             <Panel id="idMainPanel2" backgroundDesign="Transparent">
-                <!-- ============================================================================      LINHA 1 -->
+                <!-- ===========================================================      LINHA 1 -->
                 <HBox id="idHbox02" justifyContent="Start" alignItems="Center" class="sapUiSmallMarginBottom" >
                     <VBox id="idVbox01" class="sapUiSmallMarginEnd" >
                         <!-- Pesquisa por Centro -->
@@ -51,7 +51,7 @@
                         <!-- liveChange=".onSearch" -->
                     </VBox>
                 </HBox >
-                <!-- ====================================================================================== LINHA 2 -->
+                <!-- ==================================================================== LINHA 2 -->
                 <HBox id="idHbox03" justifyContent="Start" alignItems="Center" class="sapUiSmallMarginBottom" >
                     <VBox id="idVbox04" class="sapUiSmallMarginEnd" >
                         <!-- Pesquisa por Deposito Origem -->
@@ -61,30 +61,26 @@
                             width="8.6rem"                              
                             selectedKey=""                        
                             change=".onFilterTabelaCompleta" 
+                            selectionChange=".onFilterTabelaCompleta"
                             placeholder="Todos"                          
                             items="{DepositoFilter>/}">
-                            <core:Item id="idItem04"  key="{DepositoFilter>key}" text="{DepositoFilter>text}" />
+                            <core:Item   key="{DepositoFilter>key}" text="{DepositoFilter>text}" />
                         </ComboBox>
-                        <!--                         <Select
-                            id="idSelectDeposito"
-                            change=".onFilterTabelaCompleta"                           
-                            items="{DepositoFilter>/}"
-                            width="8.6rem"
-                            selectedKey="">
-                            <core:Item key="{DepositoFilter>key}" text="{DepositoFilter>text}" />
-                        </Select>  -->
+
                     </VBox>
                     <VBox id="idVbox05" class="sapUiSmallMarginEnd" >
                         <!-- Pesquisa por POSIÇÃO Origem -->
                         <Label id="idLabel05" text="Posição"  design="Bold"/>
                         <ComboBox
-    id="idComboPosicao"
-    width="8rem"
-    selectedKey=""
-    change=".onChangePosicao"
-    placeholder="Todos"  
-    items="{PosicaoFilter>/}">
-                            <core:Item id="idItm04"  key="{PosicaoFilter>key}" text="{PosicaoFilter>text}" />
+                                id="idComboPosicao"
+                                width="8rem"
+                                selectedKey=""
+                                
+                               change=".onFilterTabelaCompleta" 
+                               selectionChange=".onFilterTabelaCompleta"
+                                placeholder="Todos"  
+                                items="{PosicaoFilter>/}">
+                            <core:Item  key="{PosicaoFilter>key}" text="{PosicaoFilter>text}" />
                         </ComboBox>
                         <!--           <Select
                             id="idSelectPosicao"
@@ -178,31 +174,31 @@
                 growing="true"
                 growingScrollToLoad="true"
                 updateFinished=".onUpdateFinished">
-                                <headerToolbar>
+                <headerToolbar>
                     <OverflowToolbar id="worklistOverflowToolbar">
                         <Title
                             id="tableHeader"
                             text="{worklistView>/worklistTableTitle}"
                             level="H4"/>
-                <!-- Pesquisa por LPN 
+                        <!-- Pesquisa por LPN 
                         <SearchField
                             id="searchFieldLPN"
                             width="5rem"
                             placeholder="P.LPN"
                             search=".onSearch"/> -->
-                <!-- Pesquisa por Lote SDM 
+                        <!-- Pesquisa por Lote SDM 
                         <SearchField
                             id="searchLoteSDM"
                             width="5rem"
                             placeholder="L.SDM"
                             liveChange=".onSearch"/>-->
-                <!-- Pesquisa por Deposito Origem 
+                        <!-- Pesquisa por Deposito Origem 
                         <SearchField
                             id="searchDepOrigem"
                             width="5rem"
                             placeholder="Dp.Org"
                             liveChange=".onSearch"/> -->
-                <!-- <SearchField
+                        <!-- <SearchField
                             id="searchField2"
                             tooltip="{i18n>worklistSearchTooltip}"
                             search=".onSearch">
@@ -217,9 +213,8 @@
                             width="8rem"
                             placeholder="Depósito Origem"
                             liveChange=".onFilterDepositoOrigem"/>  -->
-                      
-                    </OverflowToolbar>      
-                </headerToolbar>    
+                    </OverflowToolbar>
+                </headerToolbar>
                 <columns>
                     <!--          <Column id="selectColumn" width="2rem">
                         <CheckBox   select=".onHeaderCheckBoxSelect"/>
@@ -256,14 +251,11 @@
                             <!--      <CheckBox           selected="{selected}" select=".onSelectCheckBox"/> -->
                             <ObjectIdentifier  id="idObject02" title="{lpn}"/>
                             <Text id="idTextMaterial" text="{material}"/>
-                   <!--     <Text id="idTextDU" text="{DU}"
+                            <!--     <Text id="idTextDU" text="{DU}"
                                 state="{= ${DU} === 'BLOQ.' ? 'Error' : ${DU} === 'LIB.' ? 'Success' : 'None' }"/>  -->
-
-<ObjectStatus  id="idTextDU"
+                            <ObjectStatus  id="idTextDU"
   text="{DU}"
   state="{= ${DU} === 'BLOQ.' ? 'Error' : ${DU} === 'LIB.' ? 'Success' : 'None' }"/>
-
-
                             <Text id="idTextDepoOri" text=               "{deposito_origem}"/>
                             <Text id="idTextPosiOri" text=               "{posicao_origem}"/>
                             <!--    <Text text=               "{quant}"/> -->

@@ -31,22 +31,8 @@
             <FlexBox id="idMainFlexBox" width="100%" height="auto" alignItems="Start">
                 <Panel id="idMainPanel1" backgroundDesign="Transparent">
                     <HBox  id="idHbx3" justifyContent="Start" alignItems="Center" class="sapUiSmallMarginBottom" >
-                        <VBox  id="idVVx1" class="sapUiSmallMarginEnd" >
-                            <Label  id="idLbTxl1" text=" "/>
-                            <Button
-                                id="idVoltarWorklistButton"
-                                icon="sap-icon://nav-back"
-                              
-                                press=".onNavBack"/>
-                        </VBox>
-                        <VBox  id="idVbx2" class="sapUiSmallMarginEnd" >
-                            <Label  id="idLbTxl2" text=" "/>
-                            <Button
-                                id="idAplicarButton"
-                                text="Aplicar"
-                                type="Emphasized"
-                                press=".onAplicarButtonPress"/>
-                        </VBox>
+
+
                         <VBox  id="idVbx1" class="sapUiSmallMarginEnd" >
                             <Label  id="idLbTx1" text="Deposito Destino :  ." labelFor="idSelectHeaderDepDestino"/>
                             <!--  
@@ -86,6 +72,22 @@
                                >
                                 <core:Item  id="idCr1"  key="{PosDestinoConcat>POSICAO}" text="{PosDestinoConcat>TEXTO}" />
                             </ComboBox>
+                        </VBox>
+                                                <VBox  id="idVVx1" class="sapUiSmallMarginEnd" >
+                            <Label  id="idLbTxl1" text=" "/>
+                            <Button
+                                id="idVoltarWorklistButton"
+                                icon="sap-icon://nav-back"
+                              
+                                press=".onNavBack"/>
+                        </VBox>
+                                                <VBox  id="idVbx2" class="sapUiSmallMarginEnd" >
+                            <Label  id="idLbTxl2" text=" "/>
+                            <Button
+                                id="idAplicarButton"
+                                text="Aplicar"
+                                type="Emphasized"
+                                press=".onAplicarButtonPress"/>
                         </VBox>
                         <VBox id="idVbx4" class="sapUiSmallMarginEnd" >
                             <Label  id="idLbBtl2" text=" "/>

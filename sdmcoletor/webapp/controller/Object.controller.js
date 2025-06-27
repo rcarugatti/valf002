@@ -380,62 +380,65 @@ onAplicarButtonPress: function () {
           this.getRouter().navTo("worklist", {}, undefined, true);
         }
       },
+//===============================================================================
 
-       
-      onSalvarPress: function () {
-        var oModel = this.getOwnerComponent().getModel("MovimentaLpn"); // Modelo do function import
-        var oTable = this.byId("objectTable");
-        var aItems = oTable.getItems();
 
-        var bTemSelecionado = false;
+onSalvarPress: function () {
+    const oFuncModel = this.getOwnerComponent().getModel("MovimentaLpn");
+    const oTable     = this.byId("objectTable");
 
-        aItems.forEach(function (oItem) {
-          var oContext = oItem.getBindingContext("SelecionadosParaTransporte");
-          if (oContext) {
-            var oData = oContext.getObject();
+    // ← remove o parâmetro truen
+    const aCtx       = oTable.getBinding("items").getContexts(); 
 
-            if (oData.selected) {
-              bTemSelecionado = true;
+    let iOK = 0, iSkip = 0;
 
-              if (!oData.deposito_destino || !oData.posicao_destino) {
-                sap.m.MessageToast.show(
-                  "LPN " + oData.lpn + " sem depósito ou posição destino."
-                );
-                return;
-              }
+    for (const ctx of aCtx) {
+        const oData = ctx.getObject();   // agora não deve ser undefined
 
-              var oParams = {
-                material: oData.material,
-                lpn: oData.lpn,
-                centro: oData.centro,
-                deposito_origem: oData.deposito_origem,
-                posicao_origem: oData.posicao_origem,
-                deposito_destino: oData.deposito_destino,
-                posicao_destino: oData.posicao_destino,
-              };
+        if (!oData || !oData.deposito_destino) {
+            iSkip++;
+            continue;
+        }
 
-              // Chamada da function import para cada item
-              oModel.callFunction("/transferir_lpn", {
-                method: "POST",
-                urlParameters: oParams,
-                success: function () {
-                  sap.m.MessageToast.show(
-                    "LPN " + oData.lpn + " transferida com sucesso."
-                  );
-                },
-                error: function (oError) {
-                  sap.m.MessageBox.error("Erro ao transferir LPN " + oData.lpn);
-                  console.error(oError);
-                },
-              });
+        const oParams = {
+            material         : oData.material,
+            lpn              : oData.lpn,
+            centro           : oData.centro,
+            deposito_origem  : oData.deposito_origem,
+            posicao_origem   : oData.posicao_origem,
+            deposito_destino : oData.deposito_destino,
+            posicao_destino  : oData.posicao_destino
+        };
+
+        oFuncModel.callFunction("/transferir_lpn", {
+            method        : "POST",
+            urlParameters : oParams,
+            success : () =>
+                sap.m.MessageToast.show(`LPN ${oData.lpn} transferida com sucesso.`),
+            error   : err => {
+                sap.m.MessageBox.error(`Erro ao transferir LPN ${oData.lpn}`);
+                console.error(err);
             }
-          }
         });
 
-        if (!bTemSelecionado) {
-          sap.m.MessageToast.show("Nenhuma linha selecionada.");
-        }
-      },
+        iOK++;
+    }
+
+    const sMsg =
+        iOK === 0
+            ? "Nenhuma LPN com depósito destino preenchido para processar."
+            : `Processadas ${iOK} LPN(s).` +
+              (iSkip ? ` ${iSkip} ignorada(s) sem depósito destino.` : "");
+
+    sap.m.MessageToast.show(sMsg);
+},
+
+   
+
+   
+
+//===============================================================================
+
 
       onSelectChange: function (oEvent) {
         var oTable = oEvent.getSource();
