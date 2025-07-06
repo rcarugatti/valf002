@@ -11,152 +11,190 @@ sap.ui.define(
 
     return BaseController.extend("sdmcoletor.controller.Object", {
       formatter: formatter,
-
+      //====
       onInit: function () {
-        var oSelecionados = sap.ui
+        const oView = this.getView();
+
+        /* ────────────────────────────────────────────────────────────────
+         * 0. Modelo SelecionadosParaTransporte (preenche tabela)
+         * ────────────────────────────────────────────────────────────────*/
+        const oSelecionados = sap.ui
           .getCore()
           .getModel("SelecionadosParaTransporte");
         if (oSelecionados) {
-          this.getView().setModel(oSelecionados, "SelecionadosParaTransporte");
-        }
-        var oModel = this.getView().getModel("SelecionadosParaTransporte");
-        if (oModel) {
-          var aData = oModel.getData();
-          aData.forEach(function (item) {
-            item.selected = false;
-            item.deposito_destino = "";
-            item.posicao_destino  = "";
+          oView.setModel(oSelecionados, "SelecionadosParaTransporte");
+
+          /* zera flags e destinos a cada navegação */
+          const aTmp = oSelecionados.getData();
+          aTmp.forEach((it) => {
+            it.selected = false;
+            it.deposito_destino = "";
+            it.posicao_destino = "";
           });
-          oModel.setData(aData);
-        }
-        var oModel = this.getOwnerComponent().getModel("MovLpn");
-        if (oModel) {
-          oModel.read("/ZC_SDM_MOVLPN", {
-            success: function (oData) {
-              /*   var oDepPosModel = new JSONModel(oData.results);  20.06.2025 11.34              
-              this.getView().setModel(oDepPosModel, "DepPosData");
-              this.onConcatenaSelect();
-            }.bind(this),
-            error: function (oError) {
-              console.error("Erro ao ler ZC_SDM_MOVLPN", oError);
-            },  */
-
-              // Remover duplicados por deposito_origem e posicao_destino
-              var aUnicos = [];
-              var oKeys = {};
-              oData.results.forEach(function (item) {
-                var key = item.deposito_origem + "-" + item.posicao_destino;
-                if (!oKeys[key]) {
-                  oKeys[key] = true;
-                  aUnicos.push(item);
-                }
-              });
-
-              // Ordenar por posicao_destino
-              aUnicos.sort(function (a, b) {
-                return a.posicao_destino.localeCompare(b.posicao_destino);
-              });
-
-              var oDepPosModel = new JSONModel(aUnicos);
-              this.getView().setModel(oDepPosModel, "DepPosData");
-
-              this.onConcatenaSelect();
-            }.bind(this),
-            error: function (oError) {
-              console.error("Erro ao ler ZC_SDM_MOVLPN", oError);
-            },
-          });
+          oSelecionados.setData(aTmp);
         }
 
-        var oDepPostZZ1ODataModel = new sap.ui.model.odata.v2.ODataModel(
-          "/sap/opu/odata/sap/ZSB_SDM_MOVIMENTA_LPN/"
-        );
-        oDepPostZZ1ODataModel.read("/ZZ1_SDM_DEP_POS?$top=100&$skip=100", {
+        /* ────────────────────────────────────────────────────────────────
+         * 1. Centro digitado na Worklist (modelo global CentroSelecionado)
+         * ────────────────────────────────────────────────────────────────*/
+        let sCentro = "";
+        const oCentModel = sap.ui.getCore().getModel("CentroSelecionado");
+        if (oCentModel) {
+          sCentro = (oCentModel.getProperty("/centro") || "").toUpperCase();
+        }
+
+        /* ────────────────────────────────────────────────────────────────
+         * 2. Ler TODAS as LPN do centro  (ZC_SDM_MOVLPN)
+         * ────────────────────────────────────────────────────────────────*/
+        const oMovOData = this.getOwnerComponent().getModel("MovLpn"); // modelo OData v2
+        oMovOData.setSizeLimit(5000); // >100 linhas
+
+        oMovOData.read("/ZC_SDM_MOVLPN", {
+          urlParameters: {
+            $filter: sCentro ? `centro eq '${sCentro}'` : undefined,
+            $top: "5000",
+          },
           success: function (oData) {
-            var oDepPostZZ1Model = new JSONModel(oData.results);
-            this.getView().setModel(oDepPostZZ1Model, "DepPostZZ1");
-            this.onConcatenaSelect();
+            /* guarda universo completo de LPN do centro */
+            oView.setModel(
+              new sap.ui.model.json.JSONModel(oData.results),
+              "MovLpnCentro"
+            );
+
+            /* gera lista única de depósito/posição — opcional, útil p/ debug */
+            const aUnicos = [];
+            const oKeySet = {};
+            oData.results.forEach((it) => {
+              const k = `${it.deposito_origem}-${it.posicao_origem}`;
+              if (!oKeySet[k]) {
+                oKeySet[k] = true;
+                aUnicos.push(it);
+              }
+            });
+            aUnicos.sort((a, b) =>
+              a.posicao_origem.localeCompare(b.posicao_origem)
+            );
+            oView.setModel(
+              new sap.ui.model.json.JSONModel(aUnicos),
+              "DepPosData"
+            );
+
+            this.onConcatenaSelect(); // roda se DepPostZZ1 já estiver carregado
           }.bind(this),
-          error: function (oError) {
-            MessageToast.show("Erro ao carregar DepPostZZ1");
+          error: (err) => {
+            sap.m.MessageToast.show("Erro ao carregar ZC_SDM_MOVLPN");
+            console.error(err);
           },
         });
 
+        /* ────────────────────────────────────────────────────────────────
+         * 3. Ler depósitos/posições válidos do centro (ZZ1_SDM_DEP_POS)
+         * ────────────────────────────────────────────────────────────────*/
+        const oDepOData = new sap.ui.model.odata.v2.ODataModel(
+          "/sap/opu/odata/sap/ZSB_SDM_MOVIMENTA_LPN/"
+        );
+
+        oDepOData.read("/ZZ1_SDM_DEP_POS", {
+          urlParameters: {
+            $filter: sCentro ? `WERKS eq '${sCentro}'` : undefined,
+            $top: "5000",
+          },
+          success: function (oData) {
+            oView.setModel(
+              new sap.ui.model.json.JSONModel(oData.results),
+              "DepPostZZ1"
+            );
+            this.onConcatenaSelect(); // roda se MovLpnCentro já estiver carregado
+          }.bind(this),
+          error: (err) => {
+            sap.m.MessageToast.show("Erro ao carregar ZZ1_SDM_DEP_POS");
+            console.error(err);
+          },
+        });
+
+        /* ────────────────────────────────────────────────────────────────
+         * 4. Roteamento padrão da Object View
+         * ────────────────────────────────────────────────────────────────*/
         this.getRouter()
           .getRoute("object")
           .attachPatternMatched(this._onObjectMatched, this);
       },
 
+      //====
       onConcatenaSelect: function () {
-        // var oView = this.getView();
-        // var aSelecionados = oView
-        //   .getModel("SelecionadosParaTransporte")
-        //   .getData();
-        // var aDepPosModel = oView.getModel("DepPostZZ1").getData();
+        const oView = this.getView();
 
-        var oView = this.getView();
-        var oSel = oView.getModel("SelecionadosParaTransporte");
-        var oDep = oView.getModel("DepPostZZ1");
-        if (!oSel || !oDep) {
+        const oMov = oView.getModel("MovLpnCentro"); // todas as LPN do centro
+        const oDep = oView.getModel("DepPostZZ1"); // depósitos/posições válidos
+
+        /* espera os dois carregarem */
+        if (!oMov || !oDep) {
           return;
         }
 
-        var aSelecionados = oSel.getData();
-        var aDepPosModel = oDep.getData();
+        const aMov = oMov.getData();
+        const aDep = oDep.getData();
 
-        var oSomaPorPosicao = {};
-        var oDepositosUnicos = {};
+        /* ────────────────────────────────────────────────────────────────
+         * 1. Soma de ocorrências por (Depósito, Posição)
+         * ────────────────────────────────────────────────────────────────*/
+        const oSomaPos = {};
+        const oDepUnico = {};
 
-        aDepPosModel.forEach(function (itemMov) {
-          var chave = itemMov.LGORT + "-" + itemMov.POSIT;
+        aDep.forEach((d) => {
+          const chave = `${d.LGORT}-${d.POSIT}`;
 
-          var ocorrencias = aSelecionados.filter(function (itemSel) {
-            return (
-              itemSel.centro === itemMov.WERKS &&
-              itemSel.deposito_origem === itemMov.LGORT &&
-              itemSel.posicao_origem === itemMov.POSIT
-            );
-          }).length;
+          const qtd = aMov.filter(
+            (m) =>
+              m.centro === d.WERKS &&
+              m.deposito_origem === d.LGORT &&
+              m.posicao_origem === d.POSIT
+          ).length;
 
-          if (!oSomaPorPosicao[chave]) {
-            oSomaPorPosicao[chave] = 0;
+          oSomaPos[chave] = (oSomaPos[chave] || 0) + qtd;
+
+          if (!oDepUnico[d.LGORT]) {
+            oDepUnico[d.LGORT] = { DEPOSITO: d.LGORT, TEXTO: d.LGORT };
           }
-          oSomaPorPosicao[chave] += ocorrencias;
+        });
 
-          if (!oDepositosUnicos[itemMov.LGORT]) {
-            oDepositosUnicos[itemMov.LGORT] = {
-              DEPOSITO: itemMov.LGORT,
-              TEXTO: itemMov.LGORT,
+        /* ────────────────────────────────────────────────────────────────
+         * 2. Constrói arrays para os ComboBox
+         * ────────────────────────────────────────────────────────────────*/
+        const aPosicoes = Object.keys(oSomaPos)
+          .map((k) => {
+            const [DEP, POS] = k.split("-");
+            return {
+              DEPOSITO: DEP,
+              POSICAO: POS,
+              QUANT: oSomaPos[k],
+              TEXTO: `${POS} - ${oSomaPos[k]}`,
             };
-          }
-        });
+          })
+          .sort((a, b) => a.POSICAO.localeCompare(b.POSICAO));
 
-        // Cria array para posições
-        var aSelectOptions = Object.keys(oSomaPorPosicao).map(function (chave) {
-          var split = chave.split("-");
-          return {
-            DEPOSITO: split[0],
-            POSICAO: split[1],
-            QUANT: oSomaPorPosicao[chave],
-            TEXTO: split[1] + " - " + oSomaPorPosicao[chave],
-          };
-        });
-
-        // Ordena posições por ordem ASC
-        aSelectOptions.sort((a, b) => a.POSICAO.localeCompare(b.POSICAO));
-
-        var oPosDestinoModel = new JSONModel(aSelectOptions);
-        oView.setModel(oPosDestinoModel, "PosDestinoConcat");
-        oView.setModel(new JSONModel(aSelectOptions), "PosDestinoConcatFull");
-
-        // Depósitos únicos ordenados
-        var aDepositosUnicos = Object.values(oDepositosUnicos).sort((a, b) =>
+        const aDepositos = Object.values(oDepUnico).sort((a, b) =>
           a.DEPOSITO.localeCompare(b.DEPOSITO)
         );
-        var oDepDestinoModel = new JSONModel(aDepositosUnicos);
-        oView.setModel(oDepDestinoModel, "DepDestinoConcat");
+
+        /* ────────────────────────────────────────────────────────────────
+         * 3. Publica nos modelos usados pelos ComboBox
+         * ────────────────────────────────────────────────────────────────*/
+        oView.setModel(
+          new sap.ui.model.json.JSONModel(aPosicoes),
+          "PosDestinoConcat"
+        );
+        oView.setModel(
+          new sap.ui.model.json.JSONModel(aPosicoes),
+          "PosDestinoConcatFull"
+        );
+        oView.setModel(
+          new sap.ui.model.json.JSONModel(aDepositos),
+          "DepDestinoConcat"
+        );
       },
 
+      //====
       onChangeDepositoDestino: function (oEvent) {
         var oSelectDeposito = oEvent.getSource();
         var sDepositoSelecionado = oSelectDeposito.getSelectedKey();
@@ -198,156 +236,64 @@ sap.ui.define(
           : aTodasOpcoes;
 
         oView.getModel("PosDestinoConcat").setData(aFiltradas);
-      },
-      /* 
-onAplicarButtonPress: function () {
-    var oTable = this.byId("objectTable");
-    var aItems = oTable.getItems();
 
-    // Pega os valores selecionados no cabeçalho
-    var sDepDestinoHeader = this.byId("idSelectHeaderDepDestino").getSelectedKey();
-    var sPosDestinoHeader = this.byId("idSelectPosDestino").getSelectedKey();
-
-    aItems.forEach(function (oItem) {
-        var oContext = oItem.getBindingContext("SelecionadosParaTransporte");
-        if (oContext) {
-            var sPath = oContext.getPath();
-            var bSelected = oContext.getModel().getProperty(sPath + "/selected");
-
-            if (bSelected) {
-                var aCells = oItem.getCells();
-
-                // Atualiza selects visuais nas linhas
-                var oSelectDepDestino = aCells.find((cell) =>
-                    cell.getId().includes("idSelectDepDestino")
-                );
-                var oSelectPosDestino = aCells.find((cell) =>
-                    cell.getId().includes("idSelectPosDest")
-                );
-
-                if (oSelectDepDestino) {
-                    oSelectDepDestino.setSelectedKey(sDepDestinoHeader);
-                }
-
-                if (oSelectPosDestino) {
-                    oSelectPosDestino.setSelectedKey(sPosDestinoHeader);
-                }
-
-                // Atualiza o modelo JSON das linhas
-                oContext.getModel().setProperty(sPath + "/deposito_destino", sDepDestinoHeader);
-                oContext.getModel().setProperty(sPath + "/posicao_destino", sPosDestinoHeader);
-            }
+        // 2. limpa a escolha anterior de posição ✔
+        var oPosCombo = oView.byId("idSelectPosDestino");
+        if (oPosCombo) {
+          oPosCombo.setSelectedKey(""); // remove seleção
+          oPosCombo.setValue(""); // limpa texto visível (ComboBox)
         }
-    });
+      },
 
-    sap.m.MessageToast.show("Valores aplicados às linhas selecionadas.");
-},
-
-      
-
-      onAplicarButtonPress: function () {
-        var oTable = this.byId("objectTable");
-        var aItems = oTable.getItems();
-
-        var sDepDestinoHeader = this.byId(
-          "idSelectHeaderDepDestino"
-        ).getSelectedKey();
-        var sPosDestinoHeader =
-          this.byId("idSelectPosDestino").getSelectedKey();
-
-        var oView = this.getView();
-        var aTodasPosicoes =
-          oView.getModel("PosDestinoConcatFull")?.getData() || [];
-
-        aItems.forEach(function (oItem) {
-          var oContext = oItem.getBindingContext("SelecionadosParaTransporte");
-          if (!oContext) return;
-
-          var sPath = oContext.getPath();
-          var bSelected = oContext.getModel().getProperty(sPath + "/selected");
-
-          if (bSelected) {
-            var aCells = oItem.getCells();
-
-            // DEPÓSITO DESTINO
-            var oSelectDepDestino = aCells.find((cell) =>
-              cell.getId().includes("idSelectDepDestino")
-            );
-            if (oSelectDepDestino) {
-              oSelectDepDestino.setSelectedKey(sDepDestinoHeader);
-            }
-
-            // Atualiza modelo com o novo depósito destino
-            oContext
-              .getModel()
-              .setProperty(sPath + "/deposito_destino", sDepDestinoHeader);
-
-            // POSIÇÃO DESTINO
-            var oSelectPosDestino = aCells.find((cell) =>
-              cell.getId().includes("idSelectPosDest")
-            );
-            if (oSelectPosDestino) {
-              // Filtrar posições com base no depósito destino
-              var aFiltradas = aTodasPosicoes.filter(function (item) {
-                return item.DEPOSITO === sDepDestinoHeader;
-              });
-
-              var oModelFiltrado = new sap.ui.model.json.JSONModel(aFiltradas);
-
-              // Setar o modelo e rebindar os items
-              oSelectPosDestino.setModel(oModelFiltrado);
-              oSelectPosDestino.bindItems(
-                "/",
-                new sap.ui.core.Item({
-                  key: "{POSICAO}",
-                  text: "{TEXTO}",
-                })
-              );
-
-              // Após rebind, aplicar selectedKey
-              oSelectPosDestino.setSelectedKey(sPosDestinoHeader);
-            }
-
-            // Atualiza modelo com a nova posição destino
-            oContext
-              .getModel()
-              .setProperty(sPath + "/posicao_destino", sPosDestinoHeader);
-          }
-        });
-
-        sap.m.MessageToast.show("Destino aplicado às linhas marcadas.");
-      },  */
       ///===============================================================================
       onAplicarButtonPress: function () {
         console.log("⏩ onAplicarButtonPress");
 
-        var oTable = this.byId("objectTable");
-        console.log("Table:", !!oTable);
+        const oView = this.getView();
+        const oDepModel = oView.getModel("DepPostZZ1"); // ← lista oficial
+        if (!oDepModel) {
+          sap.m.MessageToast.show("Lista de depósitos não carregada");
+          return;
+        }
+        const aDepValidos = oDepModel.getData(); // [{ LGORT, POSIT, … }]
 
-        var sDepDestino = this.byId(
-          "idSelectHeaderDepDestino"
-        ).getSelectedKey();
-        var sPosDestino = this.byId("idSelectPosDestino").getSelectedKey();
-        console.log("Header values →", {
-          deposito: sDepDestino,
-          posicao: sPosDestino,
-        });
+        /* valores escolhidos no cabeçalho */
+        const sDepDestino = oView
+          .byId("idSelectHeaderDepDestino")
+          .getSelectedKey();
+        const sPosDestino = oView.byId("idSelectPosDestino").getSelectedKey();
 
+        /* Regras básicas */
         if (!sDepDestino) {
-          console.log("Abort: depósito vazio");
           sap.m.MessageToast.show("Selecione o depósito destino");
           return;
         }
+        if (!sPosDestino) {
+          sap.m.MessageToast.show("Selecione a posição destino");
+          return;
+        }
 
-        var aCtx =
+        /* ───── Validação depósito + posição ───── */
+        const bParValido = aDepValidos.some(
+          (rec) => rec.LGORT === sDepDestino && rec.POSIT === sPosDestino
+        );
+        if (!bParValido) {
+          sap.m.MessageBox.error(
+            `A combinação depósito '${sDepDestino}' + posição '${sPosDestino}' ` +
+              "não é permitida para o centro selecionado."
+          );
+          return; // ⚠️ aborta aplicação
+        }
+
+        /* ───── Aplicar aos itens marcados ───── */
+        const oTable = oView.byId("objectTable");
+        const aCtx =
           oTable.getSelectedContexts("SelecionadosParaTransporte") || [];
-        console.log("Contexts selecionados:", aCtx.length);
 
         aCtx.forEach(function (oCtx, i) {
-          var sPath = oCtx.getPath();
-          console.log("Linha", i, "→ path:", sPath);
+          const sPath = oCtx.getPath();
+          const oModel = oCtx.getModel();
 
-          var oModel = oCtx.getModel();
           oModel.setProperty(sPath + "/deposito_destino", sDepDestino);
           oModel.setProperty(sPath + "/posicao_destino", sPosDestino);
         });
@@ -380,65 +326,64 @@ onAplicarButtonPress: function () {
           this.getRouter().navTo("worklist", {}, undefined, true);
         }
       },
-//===============================================================================
+      //===============================================================================
+      onSalvarPress: function () {
+        const oFuncModel = this.getOwnerComponent().getModel("MovimentaLpn");
+        const oTable = this.byId("objectTable");
 
+        // ← remove o parâmetro truen
+        const aCtx = oTable.getBinding("items").getContexts();
 
-onSalvarPress: function () {
-    const oFuncModel = this.getOwnerComponent().getModel("MovimentaLpn");
-    const oTable     = this.byId("objectTable");
+        let iOK = 0,
+          iSkip = 0;
 
-    // ← remove o parâmetro truen
-    const aCtx       = oTable.getBinding("items").getContexts(); 
+        for (const ctx of aCtx) {
+          const oData = ctx.getObject(); // agora não deve ser undefined
 
-    let iOK = 0, iSkip = 0;
-
-    for (const ctx of aCtx) {
-        const oData = ctx.getObject();   // agora não deve ser undefined
-
-        if (!oData || !oData.deposito_destino) {
+          if (!oData || !oData.deposito_destino) {
             iSkip++;
-            continue;
+            sap.m.MessageBox.error(`Deposito em Branco LPN ${oData.lpn}`);
+            //  continue;
+            return;
+          }
+
+          const oParams = {
+            material: oData.material,
+            lpn: oData.lpn,
+            centro: oData.centro,
+            deposito_origem: oData.deposito_destino, //oData.deposito_origem,
+            posicao_origem: oData.posicao_origem,
+            deposito_destino: oData.deposito_destino,
+            posicao_destino: oData.posicao_destino,
+          };
+
+          oFuncModel.callFunction("/transferir_lpn", {
+            method: "POST",
+            groupId: "transferirLpn",
+            urlParameters: oParams,
+            success: () =>
+              sap.m.MessageToast.show(
+                `LPN ${oData.lpn} transferida com sucesso.`
+              ),
+            error: (err) => {
+              sap.m.MessageBox.error(`Erro ao transferir LPN ${oData.lpn}`);
+              console.error(err);
+            },
+          });
+
+          iOK++;
         }
 
-        const oParams = {
-            material         : oData.material,
-            lpn              : oData.lpn,
-            centro           : oData.centro,
-            deposito_origem  : oData.deposito_origem,
-            posicao_origem   : oData.posicao_origem,
-            deposito_destino : oData.deposito_destino,
-            posicao_destino  : oData.posicao_destino
-        };
-
-        oFuncModel.callFunction("/transferir_lpn", {
-            method        : "POST",
-            urlParameters : oParams,
-            success : () =>
-                sap.m.MessageToast.show(`LPN ${oData.lpn} transferida com sucesso.`),
-            error   : err => {
-                sap.m.MessageBox.error(`Erro ao transferir LPN ${oData.lpn}`);
-                console.error(err);
-            }
-        });
-
-        iOK++;
-    }
-
-    const sMsg =
-        iOK === 0
+        const sMsg =
+          iOK === 0
             ? "Nenhuma LPN com depósito destino preenchido para processar."
             : `Processadas ${iOK} LPN(s).` +
               (iSkip ? ` ${iSkip} ignorada(s) sem depósito destino.` : "");
 
-    sap.m.MessageToast.show(sMsg);
-},
+        sap.m.MessageToast.show(sMsg);
+      },
 
-   
-
-   
-
-//===============================================================================
-
+      //===============================================================================
 
       onSelectChange: function (oEvent) {
         var oTable = oEvent.getSource();

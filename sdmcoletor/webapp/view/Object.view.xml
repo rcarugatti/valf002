@@ -13,7 +13,7 @@
         toggleHeaderOnTitleClick="false"
         busy="{objectView>/busy}"
         busyIndicatorDelay="{objectView>/delay}" 
-        showFooter="false">
+        showFooter="true">
         <!-- Cabeçalho expandido acima dos botões -->
         <semantic:titleExpandedContent>
             <HBox id="idHbx1">
@@ -31,8 +31,6 @@
             <FlexBox id="idMainFlexBox" width="100%" height="auto" alignItems="Start">
                 <Panel id="idMainPanel1" backgroundDesign="Transparent">
                     <HBox  id="idHbx3" justifyContent="Start" alignItems="Center" class="sapUiSmallMarginBottom" >
-
-
                         <VBox  id="idVbx1" class="sapUiSmallMarginEnd" >
                             <Label  id="idLbTx1" text="Deposito Destino :  ." labelFor="idSelectHeaderDepDestino"/>
                             <!--  
@@ -73,15 +71,7 @@
                                 <core:Item  id="idCr1"  key="{PosDestinoConcat>POSICAO}" text="{PosDestinoConcat>TEXTO}" />
                             </ComboBox>
                         </VBox>
-                                                <VBox  id="idVVx1" class="sapUiSmallMarginEnd" >
-                            <Label  id="idLbTxl1" text=" "/>
-                            <Button
-                                id="idVoltarWorklistButton"
-                                icon="sap-icon://nav-back"
-                              
-                                press=".onNavBack"/>
-                        </VBox>
-                                                <VBox  id="idVbx2" class="sapUiSmallMarginEnd" >
+                        <VBox  id="idVbx2" class="sapUiSmallMarginEnd" >
                             <Label  id="idLbTxl2" text=" "/>
                             <Button
                                 id="idAplicarButton"
@@ -92,6 +82,14 @@
                         <VBox id="idVbx4" class="sapUiSmallMarginEnd" >
                             <Label  id="idLbBtl2" text=" "/>
                             <Button  id="idBt1" text="Save" press=".onSalvarPress" type="Emphasized" icon="sap-icon://save" />
+                        </VBox>
+                        <VBox  id="idVVx1" class="sapUiSmallMarginEnd" >
+                            <Label  id="idLbTxl1" text=" "/>
+                            <Button
+                                id="idVoltarWorklistButton"
+                                icon="sap-icon://nav-back"
+                                 text="Volt."
+                                press=".onNavBack"/>
                         </VBox>
                     </HBox>
                 </Panel>
@@ -112,6 +110,7 @@
                 busyIndicatorDelay="{worklistView>/tableBusyDelay}"
                    mode="MultiSelect"
                    selectionChange=".onSelectChange"
+                   growingThreshold="18"
                 growing="true"
                 growingScrollToLoad="true"
                 updateFinished=".onUpdateFinished">
@@ -145,15 +144,15 @@
                          highlight="{= ${SelecionadosParaTransporte>DU} === 'BLOQ.' ? 'Error' : ${SelecionadosParaTransporte>DU} === 'LIB.' ? 'Success' : 'None'}">
                         <cells>
                             <Text id="idTxx2"  text="{SelecionadosParaTransporte>lpn}"/>
-                            <Text id="idTxx3"  text="{SelecionadosParaTransporte>deposito_origem}" width="1.6rem"/>
-                            <Text id="idTxx1"  text="{SelecionadosParaTransporte>posicao_origem}"  width="3.2rem"/>
-                            <Text id="idTxx4"  text="{SelecionadosParaTransporte>lote_sdm}"        width="4.8rem"/>
+                            <Text id="idTxx3"  text="{SelecionadosParaTransporte>deposito_origem}" width="1.0rem"/>
+                            <Text id="idTxx1"  text="{SelecionadosParaTransporte>posicao_origem}"  width="2rem"/>
+                            <Text id="idTxx4"  text="{SelecionadosParaTransporte>lote_sdm}"        width="3rem"/>
                             <ComboBox
                                     id="idSelectDepDestino"
                                     items="{DepDestinoConcat>/}"
                                     selectedKey="{SelecionadosParaTransporte>deposito_destino}"
                                     placeholder="-"
-                                    width="7.5rem"
+                                    width="11rem"
                                     change=".onChangeDepositoDestino">
                                 <core:Item id="tplDepDestino" key="{DepDestinoConcat>DEPOSITO}" text="{DepDestinoConcat>TEXTO}" />
                             </ComboBox>
@@ -162,11 +161,11 @@
                                     items="{PosDestinoConcatFull>/}"
                                     selectedKey="{SelecionadosParaTransporte>posicao_destino}"
                                     placeholder="-"
-                                    width="7.5rem"
+                                    width="11rem"
                                     change=".onChangeposicaoDestino">
                                 <core:Item id="tplPosDestino" key="{PosDestinoConcatFull>POSICAO}" text="{PosDestinoConcatFull>TEXTO}" />
                             </ComboBox>
-                            <Text id="idTx21"  text="{SelecionadosParaTransporte>material}" width="4rem"/>
+                            <Text id="idTx21"  text="{SelecionadosParaTransporte>material}" width="2.5rem"/>
                         </cells>
                     </ColumnListItem>
                 </items>

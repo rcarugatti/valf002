@@ -390,6 +390,10 @@ sap.ui.define(
       },
       onFilterTabelaCompleta: function () {
         var oView = this.getView();
+    // ➜  Atualiza lista de posições sempre que o depósito muda
+    var sDepositoSelecionado = oView.byId("idSelectDeposito").getSelectedKey();
+    this._updatePosicoesByDeposito(sDepositoSelecionado);
+
         var oTable = this.byId("table");
         var oBinding = oTable.getBinding("items");
 
@@ -463,73 +467,87 @@ sap.ui.define(
       },
       //  ==============================================================================================
 
-onCentroChangeComFiltro: function () {
-    const oView     = this.getView();
-    const oRawModel = oView.getModel("rawModel");
-    const sCentro   = oView.byId("searchFieldCentro").getValue().trim().toUpperCase();
+      onCentroChangeComFiltro: function () {
+        const oView = this.getView();
+        const oRawModel = oView.getModel("rawModel");
+        const sCentro = oView
+          .byId("searchFieldCentro")
+          .getValue()
+          .trim()
+          .toUpperCase();
 
-    if (!oRawModel) {
-        console.warn("rawModel não definido.");
-        return;
-    }
-
-    /* ----------------------------------------------------------------
-       1. Filtra pelo que foi digitado (começa / contém)               */
-    const aOrig     = oRawModel.getData() || [];
-    const aFiltrados = sCentro
-        ? aOrig.filter(it =>
-              (it.centro || "").toUpperCase().indexOf(sCentro) === 0      // ← aqui o ajuste
-          )
-        : [];
-
-    /* ----------------------------------------------------------------
-       2. Atualiza tabela (filteredModel)                               */
-    let oFiltered = oView.getModel("filteredModel");
-    if (!oFiltered) {
-        oFiltered = new sap.ui.model.json.JSONModel();
-        oView.setModel(oFiltered, "filteredModel");
-    }
-    oFiltered.setData(aFiltrados);
-
-    /* ----------------------------------------------------------------
-       3. Gera listas de Depósitos e Posições                           */
-    const mapDep = {}, mapPos = {};
-    const aDepositos = [], aPosicoes = [];
-
-    aFiltrados.forEach(it => {
-        if (it.deposito_origem && !mapDep[it.deposito_origem]) {
-            mapDep[it.deposito_origem] = true;
-            aDepositos.push({ key: it.deposito_origem, text: it.deposito_origem });
+        if (!oRawModel) {
+          console.warn("rawModel não definido.");
+          return;
         }
-        if (it.posicao_origem && !mapPos[it.posicao_origem]) {
+
+        /* ----------------------------------------------------------------
+       1. Filtra pelo que foi digitado (começa / contém)               */
+        const aOrig = oRawModel.getData() || [];
+        const aFiltrados = sCentro
+          ? aOrig.filter(
+              (it) => (it.centro || "").toUpperCase().indexOf(sCentro) === 0 // ← aqui o ajuste
+            )
+          : [];
+
+        /* ----------------------------------------------------------------
+       2. Atualiza tabela (filteredModel)                               */
+        let oFiltered = oView.getModel("filteredModel");
+        if (!oFiltered) {
+          oFiltered = new sap.ui.model.json.JSONModel();
+          oView.setModel(oFiltered, "filteredModel");
+        }
+        oFiltered.setData(aFiltrados);
+
+        /* ----------------------------------------------------------------
+       3. Gera listas de Depósitos e Posições                           */
+        const mapDep = {},
+          mapPos = {};
+        const aDepositos = [],
+          aPosicoes = [];
+
+        aFiltrados.forEach((it) => {
+          if (it.deposito_origem && !mapDep[it.deposito_origem]) {
+            mapDep[it.deposito_origem] = true;
+            aDepositos.push({
+              key: it.deposito_origem,
+              text: it.deposito_origem,
+            });
+          }
+          if (it.posicao_origem && !mapPos[it.posicao_origem]) {
             mapPos[it.posicao_origem] = true;
             aPosicoes.push({ key: it.posicao_origem, text: it.posicao_origem });
-        }
-    });
+          }
+        });
 
-    /* ----------------------------------------------------------------
+        /* ----------------------------------------------------------------
        4. Atualiza modelos dos ComboBox **sem** recriar objeto         */
-    let oDepModel = oView.getModel("DepositoFilter");
-    if (!oDepModel) {
-        oDepModel = new sap.ui.model.json.JSONModel();
-        oView.setModel(oDepModel, "DepositoFilter");
-    }
-    oDepModel.setData(aDepositos);
+        let oDepModel = oView.getModel("DepositoFilter");
+        if (!oDepModel) {
+          oDepModel = new sap.ui.model.json.JSONModel();
+          oView.setModel(oDepModel, "DepositoFilter");
+        }
+        oDepModel.setData(aDepositos);
 
-    let oPosModel = oView.getModel("PosicaoFilter");
-    if (!oPosModel) {
-        oPosModel = new sap.ui.model.json.JSONModel();
-        oView.setModel(oPosModel, "PosicaoFilter");
-    }
-    oPosModel.setData(aPosicoes);
-}, 
- 
-   
+        let oPosModel = oView.getModel("PosicaoFilter");
+        if (!oPosModel) {
+          oPosModel = new sap.ui.model.json.JSONModel();
+          oView.setModel(oPosModel, "PosicaoFilter");
+        }
+        oPosModel.setData(aPosicoes);
+      },
 
       //=========================================================================
       onCentroChange: function (oEvent) {
         var sCentro = oEvent.getSource().getValue().trim();
         var oView = this.getView();
+        // Guarda o centro escolhido num modelo global único
+        let oCent = sap.ui.getCore().getModel("CentroSelecionado");
+        if (!oCent) {
+          oCent = new sap.ui.model.json.JSONModel();
+          sap.ui.getCore().setModel(oCent, "CentroSelecionado");
+        }
+        oCent.setProperty("/centro", sCentro.toUpperCase());
 
         // Limpa se o campo estiver vazio
         if (!sCentro) {
@@ -589,9 +607,8 @@ onCentroChangeComFiltro: function () {
       },
 
       onRefreshPress: function () {
-
         window.location.reload();
-        
+
         /*
         var oView = this.getView();
 
@@ -781,9 +798,40 @@ onCentroChangeComFiltro: function () {
           );
       },
 
+
+
       /* =========================================================== */
       /* internal methods                                            */
       /* =========================================================== */
+      /** ------------------------------------------------------------------
+ *  Gera/atualiza o modelo "PosicaoFilter" de acordo com o depósito
+ * ------------------------------------------------------------------*/
+_updatePosicoesByDeposito: function (sDeposito) {
+    var oView     = this.getView();
+    var oRawModel = oView.getModel("rawModel");          // universo já carregado
+    if (!oRawModel) { return; }
+
+    var aOrig   = oRawModel.getData() || [];
+    var oSeen   = {};
+    var aLista  = [];
+
+    aOrig.forEach(function (it) {
+        if (it.deposito_origem === sDeposito && it.posicao_origem) {
+            if (!oSeen[it.posicao_origem]) {
+                oSeen[it.posicao_origem] = true;
+                aLista.push({ key: it.posicao_origem, text: it.posicao_origem });
+            }
+        }
+    });
+
+    var oPosModel = oView.getModel("PosicaoFilter");
+    if (!oPosModel) {
+        oPosModel = new sap.ui.model.json.JSONModel();
+        oView.setModel(oPosModel, "PosicaoFilter");
+    }
+    oPosModel.setData(aLista);
+},
+
 
       /**
        * Shows the selected item on the object page

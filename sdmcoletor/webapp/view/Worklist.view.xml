@@ -10,10 +10,16 @@
         headerPinnable="true"
         toggleHeaderOnTitleClick="true"
         headerExpanded="false" 
+        showFooter="true"
          >
         <semantic:titleSnappedContent>
             <HBox  id="idHbox01">
                 <Title id="idTxt02" text="Movimentação de LPNs" level="H3" />
+                            <!-- Centro pesquisado -->
+           
+                <ObjectStatus
+                      text="Centro: {CentroSelecionado>/centro}" />
+            
             </HBox>
         </semantic:titleSnappedContent>
         <semantic:headerContent>
@@ -171,6 +177,7 @@
                
                 noDataText="{worklistView>/tableNoDataText}"
                 busyIndicatorDelay="{worklistView>/tableBusyDelay}"
+                growingThreshold="18"
                 growing="true"
                 growingScrollToLoad="true"
                 updateFinished=".onUpdateFinished">
