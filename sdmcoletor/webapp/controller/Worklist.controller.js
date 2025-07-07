@@ -15,6 +15,55 @@ sap.ui.define(
       /* =========================================================== */
       /* lifecycle methods                                           */
       /* =========================================================== */
+         onValidarEntradas: function () {
+      /* 1. Validação do Centro ---------------------------------- */
+      let sCentro = "";
+      const oCentroModel = sap.ui.getCore().getModel("CentroSelecionado");
+      if (oCentroModel) {
+        sCentro = (oCentroModel.getProperty("/centro") || "").trim();
+      }
+      if (!sCentro) {
+        sap.m.MessageToast.show("Preencha o campo Centro antes de prosseguir.");
+        return;
+      }
+
+      const oTable = this.byId("table");
+
+      // Captura diretamente os contextos selecionados
+      const aCtx = oTable.getSelectedContexts("rawModel");   // garantia do modelo
+      if (!aCtx.length) {
+        sap.m.MessageToast.show("Selecione ao menos um item para transportar.");
+        return;
+      }
+
+      const aSelecionados = [];
+      let sTipoDU = null;
+      let sObjectId = null;
+
+      for (let i = 0; i < aCtx.length; i++) {
+        const oCtx = aCtx[i];
+        const sDU  = oCtx.getProperty("DU");
+
+        if (!sTipoDU) {
+          sTipoDU = sDU;              // primeira linha define o tipo
+        } else if (sDU !== sTipoDU) {
+          sap.m.MessageToast.show("Somente aceita DU do mesmo Tipo");
+          return;                     // abandona sem navegar
+        }
+
+        const oObj = oCtx.getObject();
+        aSelecionados.push(oObj);
+        if (!sObjectId) { sObjectId = oObj.lpn; }
+      }
+
+      // Salva e navega
+      sap.ui.getCore().setModel(new JSONModel(aSelecionados), "SelecionadosParaTransporte");
+      this.getRouter().navTo("object", { objectId: sObjectId }, true);
+  
+    },
+
+  
+      /**
       onValidarEntradas: function () {
         var oTable = this.byId("table");
         var aSelectedItems = oTable.getSelectedItems(); // <-- pega os selecionados via UI5
@@ -91,6 +140,8 @@ sap.ui.define(
           tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
         });
         this.setModel(oViewModel, "worklistView");
+        // Leitura combinada MOVIMENTA + TRANSFERE
+        this._loadMergedData();
         // ✅ Modelo nomeado com dados vazios para garantir que a tabela comece em branco
         //var oEmptyModel = new JSONModel({ results: [] });
         //this.getView().setModel(oEmptyModel);
@@ -390,9 +441,11 @@ sap.ui.define(
       },
       onFilterTabelaCompleta: function () {
         var oView = this.getView();
-    // ➜  Atualiza lista de posições sempre que o depósito muda
-    var sDepositoSelecionado = oView.byId("idSelectDeposito").getSelectedKey();
-    this._updatePosicoesByDeposito(sDepositoSelecionado);
+        // ➜  Atualiza lista de posições sempre que o depósito muda
+        var sDepositoSelecionado = oView
+          .byId("idSelectDeposito")
+          .getSelectedKey();
+        this._updatePosicoesByDeposito(sDepositoSelecionado);
 
         var oTable = this.byId("table");
         var oBinding = oTable.getBinding("items");
@@ -798,46 +851,53 @@ sap.ui.define(
           );
       },
 
-
-
       /* =========================================================== */
       /* internal methods                                            */
       /* =========================================================== */
       /** ------------------------------------------------------------------
- *  Gera/atualiza o modelo "PosicaoFilter" de acordo com o depósito
- * ------------------------------------------------------------------*/
-_updatePosicoesByDeposito: function (sDeposito) {
-    var oView     = this.getView();
-    var oRawModel = oView.getModel("rawModel");          // universo já carregado
-    if (!oRawModel) { return; }
-
-    var aOrig   = oRawModel.getData() || [];
-    var oSeen   = {};
-    var aLista  = [];
-
-    aOrig.forEach(function (it) {
-        if (it.deposito_origem === sDeposito && it.posicao_origem) {
-            if (!oSeen[it.posicao_origem]) {
-                oSeen[it.posicao_origem] = true;
-                aLista.push({ key: it.posicao_origem, text: it.posicao_origem });
-            }
+       *  Gera/atualiza o modelo "PosicaoFilter" de acordo com o depósito
+       * ------------------------------------------------------------------*/
+      _updatePosicoesByDeposito: function (sDeposito) {
+        var oView = this.getView();
+        var oRawModel = oView.getModel("rawModel"); // universo já carregado
+        if (!oRawModel) {
+          return;
         }
-    });
 
-    var oPosModel = oView.getModel("PosicaoFilter");
-    if (!oPosModel) {
-        oPosModel = new sap.ui.model.json.JSONModel();
-        oView.setModel(oPosModel, "PosicaoFilter");
-    }
-    oPosModel.setData(aLista);
-},
+        var aOrig = oRawModel.getData() || [];
+        var oSeen = {};
+        var aLista = [];
 
+        aOrig.forEach(function (it) {
+          if (it.deposito_origem === sDeposito && it.posicao_origem) {
+            if (!oSeen[it.posicao_origem]) {
+              oSeen[it.posicao_origem] = true;
+              aLista.push({ key: it.posicao_origem, text: it.posicao_origem });
+            }
+          }
+        });
+
+        var oPosModel = oView.getModel("PosicaoFilter");
+        if (!oPosModel) {
+          oPosModel = new sap.ui.model.json.JSONModel();
+          oView.setModel(oPosModel, "PosicaoFilter");
+        }
+        oPosModel.setData(aLista);
+      },
 
       /**
        * Shows the selected item on the object page
        * @param {sap.m.ObjectListItem} oItem selected Item
        * @private
        */
+    /* =========================================================== */
+    /* navegação Worklist → Object                                 */
+    /* =========================================================== */
+    _showObject: function (oItem) {
+      const oObj = oItem.getBindingContext("rawModel").getObject();
+      this.getRouter().navTo("object", { objectId: oObj.lpn }, true);
+    },
+      /* =========================================================== 
       _showObject: function (oItem) {
         this.getRouter().navTo(
           "object",
@@ -850,7 +910,59 @@ _updatePosicoesByDeposito: function (sDeposito) {
           },
           true
         );
-      },
+      },  */
+
+      /**
+     * Faz dois OData.read em paralelo, mergeia os registros e publica
+     * no modelo "rawModel".
+     */
+    _loadMergedData: function () {
+      const oOData = this.getOwnerComponent().getModel();
+      let aMov, aTra;
+
+      const merge = function () {
+        if (!aMov || !aTra) return;
+
+        const oHash = {};
+        aTra.forEach(t => {
+          oHash[`${t.lpn}-${t.centro}`] = t;
+        });
+
+        const aMerge = aMov.map(m => {
+          const t = oHash[`${m.lpn}-${m.centro}`] || {};
+
+          const nEst   = Number(m.quantidade  || 0);
+          const nQual  = Number(m.stck_qualid || m.StckQuant || 0);
+          const nTotal = nEst + nQual;
+          const sDU    = nQual > 0 ? "BLOQ." : "LIB.";
+
+          return Object.assign({}, m, {
+            deposito_origem  : t.deposito_origem  || m.deposito_origem,
+            posicao_origem   : t.posicao_origem   || m.posicao_origem,
+            deposito_destino : t.deposito_destino || m.deposito_destino,
+            posicao_destino  : t.posicao_destino  || m.posicao_destino,
+            quantidade       : nTotal,
+            DU               : sDU,
+          });
+        });
+
+        this.getView().setModel(new JSONModel(aMerge), "rawModel");
+      }.bind(this);
+
+      // 1. MOVIMENTA
+      oOData.read("/ZCDS_SDM_MOVIMENTA_LPN", {
+        urlParameters: { $top: "5000" },
+        success: oData => { aMov = oData.results; merge(); },
+        error  : console.error
+      });
+
+      // 2. TRANSFERE
+      oOData.read("/ZCDS_SDM_TRANSFERE_LPN", {
+        urlParameters: { $top: "5000" },
+        success: oData => { aTra = oData.results; merge(); },
+        error  : console.error
+      });
+    },  
 
       /**
        * Internal helper method to apply both filter and search state together on the list binding

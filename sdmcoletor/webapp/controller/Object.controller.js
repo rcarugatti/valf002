@@ -46,6 +46,7 @@ sap.ui.define(
         /* ────────────────────────────────────────────────────────────────
          * 2. Ler TODAS as LPN do centro  (ZC_SDM_MOVLPN)
          * ────────────────────────────────────────────────────────────────*/
+        this._loadMovLpnCentro(sCentro);  // 2. Carga combinada MOVIMENTA + TRANSFERE
         const oMovOData = this.getOwnerComponent().getModel("MovLpn"); // modelo OData v2
         oMovOData.setSizeLimit(5000); // >100 linhas
 
@@ -433,51 +434,68 @@ sap.ui.define(
         aItems.forEach(function (oItem) {
           var aCells = oItem.getCells();
 
-          /*          var oSelectDepDestino = aCells.find(function (cell) {
-            return cell.getId().includes("idSelectDepDestino");
-          });
-
-          var oSelectPosDestino = aCells.find(function (cell) {
-            return cell.getId().includes("idSelectPosDest");
-          });                                                  23 06 2025 1521    */
-
-          // if (oSelectDepDestino) {
-          //   oSelectDepDestino.setEnabled(!bBloqueado);
-          //   oSelectDepDestino.setSelectedKey("CFQ");
-          // }
-
-          // if (oSelectPosDestino) {
-          //   //  oSelectPosDestino.setEnabled(!bBloqueado);
-          // }
         });
       },
 
-      /*   
-      _onObjectMatched: function () {
-        var oSelecionados = sap.ui
-          .getCore()
-          .getModel("SelecionadosParaTransporte");
-        if (oSelecionados) {
-          this.getView().setModel(oSelecionados, "SelecionadosParaTransporte");
 
-          var aData = oSelecionados.getData();
+         /**
+     * Lê as duas entidades, aplica merge + regras e publica em
+     * "MovLpnCentro".
+     */
+    _loadMovLpnCentro: function (sCentro) {
+      const oView  = this.getView();
+      const oOD    = this.getOwnerComponent().getModel("MovLpn");
+      oOD.setSizeLimit(5000);
 
-          if (aData && Array.isArray(aData)) {
-            var bBloqueado = aData.some(function (item) {
-              return item.DU === "BLOQ.";
-            });
+      let aMov, aTra;
+      const merge = function () {
+        if (!aMov || !aTra) return;
 
-            if (bBloqueado) {
-              this.byId("idSelectHeaderDepDestino").setSelectedKey("CFQ");
-              this.byId("idSelectHeaderDepDestino").setEnabled(false);
-            } else {
-              this.byId("idSelectHeaderDepDestino").setEnabled(true);
-            }
-          }
-        }
-      },
-     
-       */
+        const oHash = {};
+        aTra.forEach(t => { oHash[`${t.lpn}-${t.centro}`] = t; });
+
+        const aMerge = aMov.map(m => {
+          const t = oHash[`${m.lpn}-${m.centro}`] || {};
+
+          const nEst   = Number(m.quantidade  || 0);
+          const nQual  = Number(m.stck_qualid || m.StckQuant || 0);
+          const nTotal = nEst + nQual;
+          const sDU    = nQual > 0 ? "BLOQ." : "LIB.";
+
+          return Object.assign({}, m, {
+            deposito_origem  : t.deposito_origem  || m.deposito_origem,
+            posicao_origem   : t.posicao_origem   || m.posicao_origem,
+            deposito_destino : t.deposito_destino || m.deposito_destino,
+            posicao_destino  : t.posicao_destino  || m.posicao_destino,
+            quantidade       : nTotal,
+            DU               : sDU,
+          });
+        });
+
+        oView.setModel(new JSONModel(aMerge), "MovLpnCentro");
+      };
+
+      // 1. MOVIMENTA
+      oOD.read("ZCDS_SDM_MOVIMENTA_LPN", {
+        urlParameters: {
+          $filter: sCentro ? `centro eq '${sCentro}'` : undefined,
+          $top   : "5000",
+        },
+        success: oData => { aMov = oData.results; merge(); },
+        error  : console.error
+      });
+
+      // 2. TRANSFERE
+      oOD.read("ZCDS_SDM_TRANSFERE_LPN", {
+        urlParameters: {
+          $filter: sCentro ? `centro eq '${sCentro}'` : undefined,
+          $top   : "5000",
+        },
+        success: oData => { aTra = oData.results; merge(); },
+        error  : console.error
+      });
+    },
+ 
     });
   }
 );
