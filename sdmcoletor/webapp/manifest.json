@@ -17,7 +17,7 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "/sap/opu/odata/sap/ZUI_SDM_MOVLPN/",
+        "uri": "/sap/opu/odata/sap/ZSB_SDM_MOVIMENTA_LPN/",
         "type": "OData",
         "settings": {
           "odataVersion": "2.0"

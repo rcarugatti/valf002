@@ -33,7 +33,9 @@ sap.ui.define(
 
         // --- Adicione aqui o novo modelo OData ---
         var oModelMovLpn = new sap.ui.model.odata.v2.ODataModel(
-          "/sap/opu/odata/sap/ZUI_SDM_MOVLPN/"
+          "/sap/opu/odata/sap/ZSB_SDM_MOVIMENTA_LPN/"
+        //  "/sap/opu/odata/sap/ZUI_SDM_MOVLPN/"
+
         );
         this.setModel(oModelMovLpn, "MovLpn");
         // ...existing code...

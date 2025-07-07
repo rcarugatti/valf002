@@ -164,7 +164,7 @@
                 id="table"
 
                 width="auto"
-                   items="{ path: '/ZC_SDM_MOVLPN',
+                   items="{ path: '/ZCDS_SDM_MOVIMENTA_LPN',
         sorter: [
             { path: 'centro',          descending: false },
             { path: 'deposito_origem', descending: false },

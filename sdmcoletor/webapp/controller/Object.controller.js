@@ -49,7 +49,7 @@ sap.ui.define(
         const oMovOData = this.getOwnerComponent().getModel("MovLpn"); // modelo OData v2
         oMovOData.setSizeLimit(5000); // >100 linhas
 
-        oMovOData.read("/ZC_SDM_MOVLPN", {
+        oMovOData.read("ZCDS_SDM_MOVIMENTA_LPN", {
           urlParameters: {
             $filter: sCentro ? `centro eq '${sCentro}'` : undefined,
             $top: "5000",

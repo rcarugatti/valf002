@@ -108,7 +108,7 @@ sap.ui.define(
         // --- Novo código para criar modelo de depósitos únicos ---
         var oODataModel = this.getOwnerComponent().getModel();
         // oODataModel.read("/ZC_SDM_MOV_LPN", {                                   -- RVC:05.06.2025
-        oODataModel.read("/ZC_SDM_MOVLPN", {
+        oODataModel.read("/ZCDS_SDM_MOVIMENTA_LPN", {
           success: function (oData) {
             var aDepositos = [];
             var oDepositosMap = {};
@@ -585,7 +585,7 @@ sap.ui.define(
 
         if (!oRawModel) {
           var oModel = oView.getModel(); // OData model
-          oModel.read("/ZC_SDM_MOVLPN", {
+          oModel.read("/ZCDS_SDM_MOVIMENTA_LPN", {
             urlParameters: {
               $top: "5000",
             },
@@ -846,7 +846,7 @@ _updatePosicoesByDeposito: function (sDeposito) {
               .getBindingContext()
               .getPath()
               //      .substring("/ZC_SDM_MOV_LPN".length),                               -- RVC:05.06.2025
-              .substring("/ZC_SDM_MOVLPN".length),
+              .substring("/ZCDS_SDM_MOVIMENTA_LPN".length),
           },
           true
         );

@@ -7,7 +7,7 @@
 |**Generation Platform**<br>Visual Studio Code|
 |**Template Used**<br>1worklist|
 |**Service Type**<br>SAP System (ABAP On Premise)|
-|**Service URL**<br>https://vhvmdwdqwd01.sap.valgroupco.com:44381//sap/opu/odata/sap/ZUI_SDM_MOVLPN
+|**Service URL**<br>https://vhvmdwdqwd01.sap.valgroupco.com:44381//sap/opu/odata/sap/ZSB_SDM_MOVIMENTA_LPN
 |**Module Name**<br>sdmcoletor|
 |**Application Title**<br>SDM Coletor|
 |**Namespace**<br>|

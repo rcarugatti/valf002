@@ -1,58 +1,171 @@
+
 <edmx:Edmx xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xmlns:sap="http://www.sap.com/Protocols/SAPData" Version="1.0">
-<edmx:Reference xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="https://VHVMDWDQWD01.SAP.VALGROUPCO.COM:44381/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_COMMON',Version='0001',SAP__Origin='')/$value">
+<edmx:Reference xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="http://vhvmds4dci.sap.valgroupco.com:8000/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_COMMON',Version='0001',SAP__Origin='LOCAL')/$value">
 <edmx:Include Namespace="com.sap.vocabularies.Common.v1" Alias="Common"/>
 </edmx:Reference>
-<edmx:Reference xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="https://VHVMDWDQWD01.SAP.VALGROUPCO.COM:44381/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_CAPABILITIES',Version='0001',SAP__Origin='')/$value">
+<edmx:Reference xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="http://vhvmds4dci.sap.valgroupco.com:8000/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_CAPABILITIES',Version='0001',SAP__Origin='LOCAL')/$value">
 <edmx:Include Namespace="Org.OData.Capabilities.V1" Alias="Capabilities"/>
 </edmx:Reference>
-<edmx:Reference xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="https://VHVMDWDQWD01.SAP.VALGROUPCO.COM:44381/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_COMMUNICATION',Version='0001',SAP__Origin='')/$value">
+<edmx:Reference xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="http://vhvmds4dci.sap.valgroupco.com:8000/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_COMMUNICATION',Version='0001',SAP__Origin='LOCAL')/$value">
 <edmx:Include Namespace="com.sap.vocabularies.Communication.v1" Alias="Communication"/>
 </edmx:Reference>
-<edmx:Reference xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="https://VHVMDWDQWD01.SAP.VALGROUPCO.COM:44381/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_AGGREGATION',Version='0001',SAP__Origin='')/$value">
+<edmx:Reference xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="http://vhvmds4dci.sap.valgroupco.com:8000/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_AGGREGATION',Version='0001',SAP__Origin='LOCAL')/$value">
 <edmx:Include Namespace="Org.OData.Aggregation.V1" Alias="Aggregation"/>
 </edmx:Reference>
-<edmx:Reference xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="https://VHVMDWDQWD01.SAP.VALGROUPCO.COM:44381/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_PERSONALDATA',Version='0001',SAP__Origin='')/$value">
+<edmx:Reference xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="http://vhvmds4dci.sap.valgroupco.com:8000/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_PERSONALDATA',Version='0001',SAP__Origin='LOCAL')/$value">
 <edmx:Include Namespace="com.sap.vocabularies.PersonalData.v1" Alias="PersonalData"/>
 </edmx:Reference>
-<edmx:Reference xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="https://VHVMDWDQWD01.SAP.VALGROUPCO.COM:44381/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_VALIDATION',Version='0001',SAP__Origin='')/$value">
+<edmx:Reference xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="http://vhvmds4dci.sap.valgroupco.com:8000/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_VALIDATION',Version='0001',SAP__Origin='LOCAL')/$value">
 <edmx:Include Namespace="Org.OData.Validation.V1" Alias="Validation"/>
 </edmx:Reference>
-<edmx:Reference xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="https://VHVMDWDQWD01.SAP.VALGROUPCO.COM:44381/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_ANALYTICS',Version='0001',SAP__Origin='')/$value">
+<edmx:Reference xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="http://vhvmds4dci.sap.valgroupco.com:8000/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_ANALYTICS',Version='0001',SAP__Origin='LOCAL')/$value">
 <edmx:Include Namespace="com.sap.vocabularies.Analytics.v1" Alias="Analytics"/>
 </edmx:Reference>
-<edmx:Reference xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="https://VHVMDWDQWD01.SAP.VALGROUPCO.COM:44381/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_MEASURES',Version='0001',SAP__Origin='')/$value">
+<edmx:Reference xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="http://vhvmds4dci.sap.valgroupco.com:8000/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_MEASURES',Version='0001',SAP__Origin='LOCAL')/$value">
 <edmx:Include Namespace="Org.OData.Measures.V1" Alias="Measures"/>
 </edmx:Reference>
-<edmx:Reference xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="https://VHVMDWDQWD01.SAP.VALGROUPCO.COM:44381/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_UI',Version='0001',SAP__Origin='')/$value">
+<edmx:Reference xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="http://vhvmds4dci.sap.valgroupco.com:8000/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_UI',Version='0001',SAP__Origin='LOCAL')/$value">
 <edmx:Include Namespace="com.sap.vocabularies.UI.v1" Alias="UI"/>
 </edmx:Reference>
 <edmx:DataServices m:DataServiceVersion="2.0">
-<Schema xmlns="http://schemas.microsoft.com/ado/2008/09/edm" Namespace="cds_zui_sdm_movlpn" xml:lang="en" sap:schema-version="1">
-<EntityType Name="ZC_SDM_MOVLPNType" sap:label="Movimentação de LPN Consumo" sap:content-version="1">
+<Schema xmlns="http://schemas.microsoft.com/ado/2008/09/edm" Namespace="cds_zsd_sdm_movimenta_lpn" xml:lang="pt" sap:schema-version="1">
+<EntityType Name="ZCDS_SDM_MOVIMENTA_LPNType" sap:label="Lista de LPNs para movimentação" sap:content-version="1">
 <Key>
+<PropertyRef Name="material"/>
+<PropertyRef Name="centro"/>
+<PropertyRef Name="deposito"/>
+<PropertyRef Name="lpn"/>
+<PropertyRef Name="lote_logistico"/>
+<PropertyRef Name="flgFree"/>
+</Key>
+<Property Name="material" Type="Edm.String" Nullable="false" MaxLength="18" sap:display-format="UpperCase" sap:label="Material" sap:quickinfo="Nº do material"/>
+<Property Name="centro" Type="Edm.String" Nullable="false" MaxLength="4" sap:display-format="UpperCase" sap:label="Centro"/>
+<Property Name="deposito" Type="Edm.String" Nullable="false" MaxLength="4" sap:display-format="UpperCase" sap:label="Depósito"/>
+<Property Name="lpn" Type="Edm.String" Nullable="false" MaxLength="70" sap:label="LPN" sap:quickinfo="Valor da característica"/>
+<Property Name="lote_logistico" Type="Edm.String" Nullable="false" MaxLength="10" sap:display-format="UpperCase" sap:label="Lote" sap:quickinfo="Número do lote"/>
+<Property Name="flgFree" Type="Edm.String" Nullable="false" MaxLength="1" sap:label="IDLivre"/>
+<Property Name="posicao" Type="Edm.String" MaxLength="20" sap:label="Posição" sap:quickinfo="Texto de comprimento 20"/>
+<Property Name="lote_sdm" Type="Edm.String" MaxLength="70" sap:label="Lote SDM" sap:quickinfo="Valor da característica"/>
+<Property Name="data_fabricacao" Type="Edm.DateTime" Precision="0" sap:display-format="Date" sap:label="Data de Fabricação"/>
+<Property Name="data_vencimento" Type="Edm.DateTime" Precision="0" sap:display-format="Date" sap:label="Data do vencimento"/>
+<Property Name="referencia" Type="Edm.String" MaxLength="70" sap:label="Referência" sap:quickinfo="Valor da característica"/>
+<Property Name="referencia_alternativa" Type="Edm.String" MaxLength="70" sap:label="Referência Alternativa" sap:quickinfo="Valor da característica"/>
+<Property Name="status" Type="Edm.String" MaxLength="40" sap:label="Status" sap:quickinfo="Texto breve para o código"/>
+<Property Name="quantidade" Type="Edm.Decimal" Precision="13" Scale="3" sap:unit="PBC1E39991F7E9AB41033D38DFD901AB0" sap:label="Quantidade"/>
+<Property Name="unidade_medida" Type="Edm.String" MaxLength="3" sap:label="Unid.medida básica" sap:quickinfo="Unidade de medida básica" sap:semantics="unit-of-measure"/>
+<Property Name="MaterialDescription" Type="Edm.String" MaxLength="40" sap:label="Texto breve material" sap:quickinfo="Texto breve de material"/>
+<Property Name="stck_qualid" Type="Edm.Decimal" Precision="13" Scale="3" sap:unit="unidade_medida" sap:label="Qtde.Stq.Qualid."/>
+</EntityType>
+<EntityType Name="ZCDS_SDM_MOV_DEP_CFGType" sap:label="Depositos disponíveis para movimentação" sap:content-version="1">
+<Key>
+<PropertyRef Name="SAP_UUID"/>
+</Key>
+<Property Name="SAP_UUID" Type="Edm.Guid" Nullable="false" sap:label="UUID" sap:quickinfo="16 Byte UUID in 16 Bytes (Raw Format)"/>
+<Property Name="WERKS" Type="Edm.String" MaxLength="4" sap:label="Centro"/>
+<Property Name="LGORT" Type="Edm.String" MaxLength="4" sap:label="Depósito"/>
+<Property Name="MANUAL" Type="Edm.Boolean" sap:display-format="UpperCase" sap:label="Manual"/>
+<Property Name="SAP_CreatedDateTime" Type="Edm.DateTimeOffset" Precision="7" sap:label="Criado Em" sap:creatable="false" sap:updatable="false"/>
+<Property Name="SAP_CreatedByUser" Type="Edm.String" MaxLength="12" sap:display-format="UpperCase" sap:text="SAP_CreatedByUser_Text" sap:label="Criado por" sap:creatable="false" sap:updatable="false"/>
+<Property Name="SAP_CreatedByUser_Text" Type="Edm.String" MaxLength="80" sap:label="Descrição" sap:quickinfo="Descrição da conta de usuário técnica" sap:creatable="false" sap:updatable="false"/>
+<Property Name="SAP_LastChangedDateTime" Type="Edm.DateTimeOffset" Precision="7" sap:label="última modificação em" sap:creatable="false" sap:updatable="false"/>
+<Property Name="SAP_LastChangedByUser" Type="Edm.String" MaxLength="12" sap:display-format="UpperCase" sap:text="SAP_LastChangedByUser_Text" sap:label="Última modificação por" sap:creatable="false" sap:updatable="false"/>
+<Property Name="SAP_LastChangedByUser_Text" Type="Edm.String" MaxLength="80" sap:label="Descrição" sap:quickinfo="Descrição da conta de usuário técnica" sap:creatable="false" sap:updatable="false"/>
+</EntityType>
+<EntityType Name="ZCDS_SDM_TRANSFERE_LPNType" sap:label="Transferência de LPN(s)" sap:content-version="1">
+<Key>
+<PropertyRef Name="material"/>
 <PropertyRef Name="lpn"/>
 <PropertyRef Name="centro"/>
 <PropertyRef Name="deposito_origem"/>
+<PropertyRef Name="posicao_origem"/>
+<PropertyRef Name="deposito_destino"/>
+<PropertyRef Name="posicao_destino"/>
 </Key>
-<Property Name="lpn" Type="Edm.String" Nullable="false" MaxLength="70" sap:label="Lpn" sap:quickinfo="Characteristic Value"/>
-<Property Name="centro" Type="Edm.String" Nullable="false" MaxLength="4" sap:display-format="UpperCase" sap:label="Plant"/>
-<Property Name="deposito_origem" Type="Edm.String" Nullable="false" MaxLength="4" sap:display-format="UpperCase" sap:label="Deposito origem" sap:quickinfo="Storage location"/>
-<Property Name="posicao_origem" Type="Edm.String" MaxLength="20" sap:label="Posição atual" sap:quickinfo="Text of length 20"/>
-<Property Name="material" Type="Edm.String" MaxLength="18" sap:display-format="UpperCase" sap:label="Mat." sap:quickinfo="Material Number"/>
-<Property Name="deposito_destino" Type="Edm.String" MaxLength="4" sap:display-format="UpperCase" sap:label="Deposito destino" sap:quickinfo="Storage location"/>
-<Property Name="posicao_destino" Type="Edm.String" MaxLength="20" sap:label="Posição destino" sap:quickinfo="Text of length 20"/>
-<Property Name="lote_sdm" Type="Edm.String" MaxLength="70" sap:label="Lote SDM" sap:quickinfo="Characteristic Value"/>
-<Property Name="DU" Type="Edm.String" MaxLength="5" sap:label="DU"/>
-<Property Name="Quant" Type="Edm.Decimal" Precision="13" Scale="3" sap:unit="unidade_medida" sap:label="QtdTotal"/>
-<Property Name="Quantidade" Type="Edm.Decimal" Precision="13" Scale="3" sap:unit="unidade_medida" sap:label="Quantidade"/>
-<Property Name="StckQuant" Type="Edm.Decimal" Precision="13" Scale="3" sap:unit="unidade_medida" sap:label="QtdStck"/>
-<Property Name="unidade_medida" Type="Edm.String" MaxLength="3" sap:label="Base Unit of Measure" sap:semantics="unit-of-measure"/>
-<Property Name="lnhConst" Type="Edm.String" MaxLength="1" sap:display-format="NonNegative" sap:label="QtdLinha"/>
+<Property Name="material" Type="Edm.String" Nullable="false" MaxLength="18" sap:display-format="UpperCase" sap:label="Material" sap:quickinfo="Nº do material"/>
+<Property Name="lpn" Type="Edm.String" Nullable="false" MaxLength="70" sap:label="LPN" sap:quickinfo="Valor da característica"/>
+<Property Name="centro" Type="Edm.String" Nullable="false" MaxLength="4" sap:display-format="UpperCase" sap:label="Centro"/>
+<Property Name="deposito_origem" Type="Edm.String" Nullable="false" MaxLength="4" sap:display-format="UpperCase" sap:label="Depósito"/>
+<Property Name="posicao_origem" Type="Edm.String" Nullable="false" MaxLength="20" sap:label="Posição" sap:quickinfo="Texto de comprimento 20"/>
+<Property Name="deposito_destino" Type="Edm.String" Nullable="false" MaxLength="4" sap:display-format="UpperCase" sap:label="Depósito"/>
+<Property Name="posicao_destino" Type="Edm.String" Nullable="false" MaxLength="20" sap:label="Texto comprimento 20" sap:quickinfo="Texto de comprimento 20"/>
 </EntityType>
-<EntityContainer Name="cds_zui_sdm_movlpn_Entities" m:IsDefaultEntityContainer="true" sap:message-scope-supported="true" sap:supported-formats="atom json xlsx">
-<EntitySet Name="ZC_SDM_MOVLPN" EntityType="cds_zui_sdm_movlpn.ZC_SDM_MOVLPNType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
+<EntityType Name="ZZ1_SDM_DEP_CFGType" sap:label="Configuração de Depósitos SDM" sap:content-version="1">
+<Key>
+<PropertyRef Name="SAP_UUID"/>
+</Key>
+<Property Name="SAP_UUID" Type="Edm.Guid" Nullable="false" sap:label="UUID" sap:quickinfo="16 Byte UUID in 16 Bytes (Raw Format)"/>
+<Property Name="WERKS" Type="Edm.String" MaxLength="4" sap:label="Centro"/>
+<Property Name="LGORT" Type="Edm.String" MaxLength="4" sap:label="Depósito"/>
+<Property Name="MANUAL" Type="Edm.Boolean" sap:display-format="UpperCase" sap:label="Manual"/>
+<Property Name="SAP_CreatedDateTime" Type="Edm.DateTimeOffset" Precision="7" sap:label="Criado Em" sap:creatable="false" sap:updatable="false"/>
+<Property Name="SAP_CreatedByUser" Type="Edm.String" MaxLength="12" sap:display-format="UpperCase" sap:text="SAP_CreatedByUser_Text" sap:label="Criado por" sap:creatable="false" sap:updatable="false"/>
+<Property Name="SAP_CreatedByUser_Text" Type="Edm.String" MaxLength="80" sap:label="Descrição" sap:quickinfo="Descrição da conta de usuário técnica" sap:creatable="false" sap:updatable="false"/>
+<Property Name="SAP_LastChangedDateTime" Type="Edm.DateTimeOffset" Precision="7" sap:label="última modificação em" sap:creatable="false" sap:updatable="false"/>
+<Property Name="SAP_LastChangedByUser" Type="Edm.String" MaxLength="12" sap:display-format="UpperCase" sap:text="SAP_LastChangedByUser_Text" sap:label="Última modificação por" sap:creatable="false" sap:updatable="false"/>
+<Property Name="SAP_LastChangedByUser_Text" Type="Edm.String" MaxLength="80" sap:label="Descrição" sap:quickinfo="Descrição da conta de usuário técnica" sap:creatable="false" sap:updatable="false"/>
+</EntityType>
+<EntityType Name="ZZ1_SDM_DEP_POSType" sap:label="VPE: Posições por Depósito" sap:content-version="1">
+<Key>
+<PropertyRef Name="SAP_UUID"/>
+</Key>
+<Property Name="SAP_UUID" Type="Edm.Guid" Nullable="false" sap:label="UUID" sap:quickinfo="16 Byte UUID in 16 Bytes (Raw Format)"/>
+<Property Name="WERKS" Type="Edm.String" MaxLength="4" sap:label="Centro"/>
+<Property Name="LGORT" Type="Edm.String" MaxLength="20" sap:label="Depósito"/>
+<Property Name="POSIT" Type="Edm.String" MaxLength="8" sap:label="Posição"/>
+<Property Name="SAP_Description" Type="Edm.String" MaxLength="80" sap:label="Descrição"/>
+<Property Name="SAP_CreatedDateTime" Type="Edm.DateTimeOffset" Precision="7" sap:label="Criado em" sap:creatable="false" sap:updatable="false"/>
+<Property Name="SAP_CreatedByUser" Type="Edm.String" MaxLength="12" sap:display-format="UpperCase" sap:text="SAP_CreatedByUser_Text" sap:label="Criado por" sap:creatable="false" sap:updatable="false"/>
+<Property Name="SAP_CreatedByUser_Text" Type="Edm.String" MaxLength="80" sap:label="Descrição" sap:quickinfo="Descrição da conta de usuário técnica" sap:creatable="false" sap:updatable="false"/>
+<Property Name="SAP_LastChangedDateTime" Type="Edm.DateTimeOffset" Precision="7" sap:label="Última modificação em" sap:creatable="false" sap:updatable="false"/>
+<Property Name="SAP_LastChangedByUser" Type="Edm.String" MaxLength="12" sap:display-format="UpperCase" sap:text="SAP_LastChangedByUser_Text" sap:label="Última modificação por" sap:creatable="false" sap:updatable="false"/>
+<Property Name="SAP_LastChangedByUser_Text" Type="Edm.String" MaxLength="80" sap:label="Descrição" sap:quickinfo="Descrição da conta de usuário técnica" sap:creatable="false" sap:updatable="false"/>
+</EntityType>
+<EntityContainer Name="cds_zsd_sdm_movimenta_lpn_Entities" m:IsDefaultEntityContainer="true" sap:message-scope-supported="true" sap:supported-formats="atom json xlsx">
+<EntitySet Name="ZCDS_SDM_MOVIMENTA_LPN" EntityType="cds_zsd_sdm_movimenta_lpn.ZCDS_SDM_MOVIMENTA_LPNType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
+<EntitySet Name="ZCDS_SDM_MOV_DEP_CFG" EntityType="cds_zsd_sdm_movimenta_lpn.ZCDS_SDM_MOV_DEP_CFGType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
+<EntitySet Name="ZCDS_SDM_TRANSFERE_LPN" EntityType="cds_zsd_sdm_movimenta_lpn.ZCDS_SDM_TRANSFERE_LPNType" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1"/>
+<EntitySet Name="ZZ1_SDM_DEP_CFG" EntityType="cds_zsd_sdm_movimenta_lpn.ZZ1_SDM_DEP_CFGType" sap:searchable="true" sap:content-version="1"/>
+<EntitySet Name="ZZ1_SDM_DEP_POS" EntityType="cds_zsd_sdm_movimenta_lpn.ZZ1_SDM_DEP_POSType" sap:searchable="true" sap:content-version="1"/>
+<FunctionImport Name="criar_log_mov_lpn" ReturnType="cds_zsd_sdm_movimenta_lpn.ZCDS_SDM_TRANSFERE_LPNType" EntitySet="ZCDS_SDM_TRANSFERE_LPN" m:HttpMethod="POST" sap:action-for="cds_zsd_sdm_movimenta_lpn.ZCDS_SDM_TRANSFERE_LPNType">
+<Parameter Name="material" Type="Edm.String" Mode="In" MaxLength="40"/>
+<Parameter Name="lpn" Type="Edm.String" Mode="In" MaxLength="70"/>
+<Parameter Name="centro" Type="Edm.String" Mode="In" MaxLength="4"/>
+<Parameter Name="deposito_origem" Type="Edm.String" Mode="In" MaxLength="4"/>
+<Parameter Name="posicao_origem" Type="Edm.String" Mode="In" MaxLength="20"/>
+<Parameter Name="deposito_destino" Type="Edm.String" Mode="In" MaxLength="4"/>
+<Parameter Name="posicao_destino" Type="Edm.String" Mode="In" MaxLength="20"/>
+</FunctionImport>
+<FunctionImport Name="transferir_lpn" ReturnType="cds_zsd_sdm_movimenta_lpn.ZCDS_SDM_TRANSFERE_LPNType" EntitySet="ZCDS_SDM_TRANSFERE_LPN" m:HttpMethod="POST" sap:action-for="cds_zsd_sdm_movimenta_lpn.ZCDS_SDM_TRANSFERE_LPNType">
+<Parameter Name="material" Type="Edm.String" Mode="In" MaxLength="40"/>
+<Parameter Name="lpn" Type="Edm.String" Mode="In" MaxLength="70"/>
+<Parameter Name="centro" Type="Edm.String" Mode="In" MaxLength="4"/>
+<Parameter Name="deposito_origem" Type="Edm.String" Mode="In" MaxLength="4"/>
+<Parameter Name="posicao_origem" Type="Edm.String" Mode="In" MaxLength="20"/>
+<Parameter Name="deposito_destino" Type="Edm.String" Mode="In" MaxLength="4"/>
+<Parameter Name="posicao_destino" Type="Edm.String" Mode="In" MaxLength="20"/>
+</FunctionImport>
+<FunctionImport Name="validar_remessa" ReturnType="cds_zsd_sdm_movimenta_lpn.ZCDS_SDM_TRANSFERE_LPNType" EntitySet="ZCDS_SDM_TRANSFERE_LPN" m:HttpMethod="POST" sap:action-for="cds_zsd_sdm_movimenta_lpn.ZCDS_SDM_TRANSFERE_LPNType">
+<Parameter Name="material" Type="Edm.String" Mode="In" MaxLength="40"/>
+<Parameter Name="lpn" Type="Edm.String" Mode="In" MaxLength="70"/>
+<Parameter Name="centro" Type="Edm.String" Mode="In" MaxLength="4"/>
+<Parameter Name="deposito_origem" Type="Edm.String" Mode="In" MaxLength="4"/>
+<Parameter Name="posicao_origem" Type="Edm.String" Mode="In" MaxLength="20"/>
+<Parameter Name="deposito_destino" Type="Edm.String" Mode="In" MaxLength="4"/>
+<Parameter Name="posicao_destino" Type="Edm.String" Mode="In" MaxLength="20"/>
+</FunctionImport>
+<FunctionImport Name="ZZ1_SDM_DEP_CFGSap_upsert" ReturnType="cds_zsd_sdm_movimenta_lpn.ZZ1_SDM_DEP_CFGType" EntitySet="ZZ1_SDM_DEP_CFG" m:HttpMethod="POST">
+<Parameter Name="WERKS" Type="Edm.String" Mode="In" MaxLength="4"/>
+<Parameter Name="LGORT" Type="Edm.String" Mode="In" MaxLength="4"/>
+<Parameter Name="MANUAL" Type="Edm.Boolean" Mode="In"/>
+</FunctionImport>
+<FunctionImport Name="ZZ1_SDM_DEP_POSSap_upsert" ReturnType="cds_zsd_sdm_movimenta_lpn.ZZ1_SDM_DEP_POSType" EntitySet="ZZ1_SDM_DEP_POS" m:HttpMethod="POST">
+<Parameter Name="WERKS" Type="Edm.String" Mode="In" MaxLength="4"/>
+<Parameter Name="LGORT" Type="Edm.String" Mode="In" MaxLength="20"/>
+<Parameter Name="POSIT" Type="Edm.String" Mode="In" MaxLength="8"/>
+<Parameter Name="SAP_Description" Type="Edm.String" Mode="In" MaxLength="80"/>
+</FunctionImport>
 </EntityContainer>
-<Annotations xmlns="http://docs.oasis-open.org/odata/ns/edm" Target="cds_zui_sdm_movlpn.cds_zui_sdm_movlpn_Entities">
+<Annotations xmlns="http://docs.oasis-open.org/odata/ns/edm" Target="cds_zsd_sdm_movimenta_lpn.cds_zsd_sdm_movimenta_lpn_Entities">
 <Annotation Term="Common.ApplyMultiUnitBehaviorForSortingAndFiltering" Bool="true"/>
 <Annotation Term="Aggregation.ApplySupported">
 <Record>
@@ -67,8 +180,46 @@
 </Record>
 </Annotation>
 </Annotations>
-<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="self" href="https://VHVMDWDQWD01.SAP.VALGROUPCO.COM:44381/sap/opu/odata/sap/ZUI_SDM_MOVLPN/$metadata"/>
-<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="latest-version" href="https://VHVMDWDQWD01.SAP.VALGROUPCO.COM:44381/sap/opu/odata/sap/ZUI_SDM_MOVLPN/$metadata"/>
+<Annotations xmlns="http://docs.oasis-open.org/odata/ns/edm" Target="cds_zsd_sdm_movimenta_lpn.ZCDS_SDM_MOV_DEP_CFGType/LGORT">
+<Annotation Term="Common.FieldControl" EnumMember="Common.FieldControlType/Mandatory"/>
+</Annotations>
+<Annotations xmlns="http://docs.oasis-open.org/odata/ns/edm" Target="cds_zsd_sdm_movimenta_lpn.ZCDS_SDM_MOV_DEP_CFGType/WERKS">
+<Annotation Term="Common.FieldControl" EnumMember="Common.FieldControlType/Mandatory"/>
+</Annotations>
+<Annotations xmlns="http://docs.oasis-open.org/odata/ns/edm" Target="cds_zsd_sdm_movimenta_lpn.ZZ1_SDM_DEP_CFGType/LGORT">
+<Annotation Term="Common.FieldControl" EnumMember="Common.FieldControlType/Mandatory"/>
+</Annotations>
+<Annotations xmlns="http://docs.oasis-open.org/odata/ns/edm" Target="cds_zsd_sdm_movimenta_lpn.ZZ1_SDM_DEP_CFGType/WERKS">
+<Annotation Term="Common.FieldControl" EnumMember="Common.FieldControlType/Mandatory"/>
+</Annotations>
+<Annotations xmlns="http://docs.oasis-open.org/odata/ns/edm" Target="cds_zsd_sdm_movimenta_lpn.ZZ1_SDM_DEP_POSType/LGORT">
+<Annotation Term="Common.FieldControl" EnumMember="Common.FieldControlType/Mandatory"/>
+</Annotations>
+<Annotations xmlns="http://docs.oasis-open.org/odata/ns/edm" Target="cds_zsd_sdm_movimenta_lpn.ZZ1_SDM_DEP_POSType/POSIT">
+<Annotation Term="Common.FieldControl" EnumMember="Common.FieldControlType/Mandatory"/>
+</Annotations>
+<Annotations xmlns="http://docs.oasis-open.org/odata/ns/edm" Target="cds_zsd_sdm_movimenta_lpn.ZZ1_SDM_DEP_POSType/WERKS">
+<Annotation Term="Common.FieldControl" EnumMember="Common.FieldControlType/Mandatory"/>
+</Annotations>
+<Annotations xmlns="http://docs.oasis-open.org/odata/ns/edm" Target="cds_zsd_sdm_movimenta_lpn.ZZ1_SDM_DEP_CFGType">
+<Annotation Term="Common.SemanticKey">
+<Collection>
+<PropertyPath>LGORT</PropertyPath>
+<PropertyPath>WERKS</PropertyPath>
+</Collection>
+</Annotation>
+</Annotations>
+<Annotations xmlns="http://docs.oasis-open.org/odata/ns/edm" Target="cds_zsd_sdm_movimenta_lpn.ZZ1_SDM_DEP_POSType">
+<Annotation Term="Common.SemanticKey">
+<Collection>
+<PropertyPath>POSIT</PropertyPath>
+<PropertyPath>LGORT</PropertyPath>
+<PropertyPath>WERKS</PropertyPath>
+</Collection>
+</Annotation>
+</Annotations>
+<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="self" href="http://vhvmds4dci.sap.valgroupco.com:8000/sap/opu/odata/sap/ZSB_SDM_MOVIMENTA_LPN/$metadata"/>
+<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="latest-version" href="http://vhvmds4dci.sap.valgroupco.com:8000/sap/opu/odata/sap/ZSB_SDM_MOVIMENTA_LPN/$metadata"/>
 </Schema>
 </edmx:DataServices>
 </edmx:Edmx>

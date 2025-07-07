@@ -38,7 +38,7 @@ server:
       configuration:
         mountPath: /
         services:
-          - urlPath: /sap/opu/odata/sap/ZUI_SDM_MOVLPN
+          - urlPath: /sap/opu/odata/sap/ZSB_SDM_MOVIMENTA_LPN
             metadataPath: ./webapp/localService/metadata.xml
             mockdataPath: ./webapp/localService/data
             generateMockData: true
