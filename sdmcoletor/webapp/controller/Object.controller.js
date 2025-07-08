@@ -46,7 +46,7 @@ sap.ui.define(
         /* ────────────────────────────────────────────────────────────────
          * 2. Ler TODAS as LPN do centro  (ZC_SDM_MOVLPN)
          * ────────────────────────────────────────────────────────────────*/
-        this._loadMovLpnCentro(sCentro);  // 2. Carga combinada MOVIMENTA + TRANSFERE
+        this._loadMovLpnCentro(sCentro); // 2. Carga combinada MOVIMENTA + TRANSFERE
         const oMovOData = this.getOwnerComponent().getModel("MovLpn"); // modelo OData v2
         oMovOData.setSizeLimit(5000); // >100 linhas
 
@@ -94,7 +94,14 @@ sap.ui.define(
         const oDepOData = new sap.ui.model.odata.v2.ODataModel(
           "/sap/opu/odata/sap/ZSB_SDM_MOVIMENTA_LPN/"
         );
+        const oParams = { $top: "5000" }; // sempre queremos limitar
 
+        // envia só o que é necessário
+        const mUrlParams = { $top: "5000" }; // limite sempre presente
+        if (sCentro) {
+          // adiciona o filtro se houver centro
+          mUrlParams.$filter = `WERKS eq '${sCentro}'`;
+        }
         oDepOData.read("/ZZ1_SDM_DEP_POS", {
           urlParameters: {
             $filter: sCentro ? `WERKS eq '${sCentro}'` : undefined,
@@ -433,69 +440,168 @@ sap.ui.define(
 
         aItems.forEach(function (oItem) {
           var aCells = oItem.getCells();
-
         });
       },
 
+      /**
+       * Lê as duas entidades, aplica merge + regras e publica em
+       * "MovLpnCentro".
+       */
+      _loadMovLpnCentro: function (sCentro) {
+        const oView = this.getView();
+        const oOD = this.getOwnerComponent().getModel("MovLpn");
+        oOD.setSizeLimit(5000);
 
-         /**
-     * Lê as duas entidades, aplica merge + regras e publica em
-     * "MovLpnCentro".
-     */
-    _loadMovLpnCentro: function (sCentro) {
-      const oView  = this.getView();
-      const oOD    = this.getOwnerComponent().getModel("MovLpn");
-      oOD.setSizeLimit(5000);
+        let aMov, aTra;
+        const merge = function () {
+          if (!aMov || !aTra) return;
 
-      let aMov, aTra;
-      const merge = function () {
-        if (!aMov || !aTra) return;
-
-        const oHash = {};
-        aTra.forEach(t => { oHash[`${t.lpn}-${t.centro}`] = t; });
-
-        const aMerge = aMov.map(m => {
-          const t = oHash[`${m.lpn}-${m.centro}`] || {};
-
-          const nEst   = Number(m.quantidade  || 0);
-          const nQual  = Number(m.stck_qualid || m.StckQuant || 0);
-          const nTotal = nEst + nQual;
-          const sDU    = nQual > 0 ? "BLOQ." : "LIB.";
-
-          return Object.assign({}, m, {
-            deposito_origem  : t.deposito_origem  || m.deposito_origem,
-            posicao_origem   : t.posicao_origem   || m.posicao_origem,
-            deposito_destino : t.deposito_destino || m.deposito_destino,
-            posicao_destino  : t.posicao_destino  || m.posicao_destino,
-            quantidade       : nTotal,
-            DU               : sDU,
+          const oHash = {};
+          aTra.forEach((t) => {
+            oHash[`${t.lpn}-${t.centro}`] = t;
           });
+
+          const aMerge = aMov.map((m) => {
+            const t = oHash[`${m.lpn}-${m.centro}`] || {};
+
+            const nEst = Number(m.quantidade || 0);
+            const nQual = Number(m.stck_qualid || m.StckQuant || 0);
+            const nTotal = nEst + nQual;
+            const sDU = nQual > 0 ? "BLOQ." : "LIB.";
+
+            return Object.assign({}, m, {
+              deposito_origem: t.deposito_origem || m.deposito_origem,
+              posicao_origem: t.posicao_origem || m.posicao_origem,
+              deposito_destino: t.deposito_destino || m.deposito_destino,
+              posicao_destino: t.posicao_destino || m.posicao_destino,
+              quantidade: nTotal,
+              DU: sDU,
+            });
+          });
+
+          oView.setModel(new JSONModel(aMerge), "MovLpnCentro");
+        };
+
+        // 1. MOVIMENTA
+        oOD.read("ZCDS_SDM_MOVIMENTA_LPN", {
+          urlParameters: {
+            $filter: sCentro ? `centro eq '${sCentro}'` : undefined,
+            $top: "5000",
+          },
+          success: (oData) => {
+            aMov = oData.results;
+            merge();
+          },
+          error: console.error,
         });
 
-        oView.setModel(new JSONModel(aMerge), "MovLpnCentro");
-      };
+        // 2. TRANSFERE
+        oOD.read("ZCDS_SDM_TRANSFERE_LPN", {
+          urlParameters: {
+            $filter: sCentro ? `centro eq '${sCentro}'` : undefined,
+            $top: "5000",
+          },
+          success: (oData) => {
+            aTra = oData.results;
+            merge();
+          },
+          error: console.error,
+        });
+      },
 
-      // 1. MOVIMENTA
-      oOD.read("ZCDS_SDM_MOVIMENTA_LPN", {
-        urlParameters: {
-          $filter: sCentro ? `centro eq '${sCentro}'` : undefined,
-          $top   : "5000",
-        },
-        success: oData => { aMov = oData.results; merge(); },
-        error  : console.error
-      });
+      _grava_deposito_distinto: function (sCentro) {
+        // Transferência Depósito Origem e Destino distintos
+        /** var modelMaterialDocument = this.getView().getModel("materialDocumentModel"),
+                    if (materialDocumentWithItems.to_MaterialDocumentItem.results.length > 0) {
+                        modelMaterialDocument.create("/A_MaterialDocumentHeader", materialDocumentWithItems, {
+                            success: function (odata, response) {
 
-      // 2. TRANSFERE
-      oOD.read("ZCDS_SDM_TRANSFERE_LPN", {
-        urlParameters: {
-          $filter: sCentro ? `centro eq '${sCentro}'` : undefined,
-          $top   : "5000",
-        },
-        success: oData => { aTra = oData.results; merge(); },
-        error  : console.error
-      });
-    },
- 
+                                if (updateCboPosicao.results.length > 0) {
+
+                                    updateCboPosicao.results.forEach(element => {
+                                        // Atualização CBO Posição
+                                        modelAction.callFunction(
+                                            "/transferir_lpn", {
+                                            method: "POST",
+                                            groupId: "transferirLpn",
+                                            urlParameters: {
+                                                material: element.material,
+                                                lpn: element.lpn,
+                                                centro: element.centro,
+                                                deposito_origem: element.deposito_origem,
+                                                posicao_origem: element.posicao_origem,
+                                                deposito_destino: element.deposito_destino,
+                                                posicao_destino: element.posicao_destino,
+                                            },
+                                            success: function (oData, response) {
+
+                                                if (updateCboLog.results.length > 0) {
+                                                    updateCboLog.results.forEach(element => {
+                                                        // Atualização CBO Log Movimentação LPN
+                                                        modelAction.callFunction(
+                                                            "/criar_log_mov_lpn", {
+                                                            method: "POST",
+                                                            groupId: "criarLogMovLpn",
+                                                            urlParameters: {
+                                                                material: element.material,
+                                                                lpn: element.lpn,
+                                                                centro: element.centro,
+                                                                deposito_origem: element.deposito_origem,
+                                                                posicao_origem: element.posicao_origem,
+                                                                deposito_destino: element.deposito_destino,
+                                                                posicao_destino: element.posicao_destino,
+                                                            },
+                                                            success: function (oData, response) {
+                                                            }.bind(this),
+                                                            error: function (oError) {
+                                                                reject(oError)
+                                                            }
+                                                        });
+                                                    })
+                                                }
+
+                                                sap.ui.core.BusyIndicator.hide();
+                                                this.getView().setBusy(false);
+                                                this.oDialogTransferirLpn.setBusy(false);
+                                                this.oDialogTransferirLpn.close();
+                                                this.getView().getModel().refresh();
+                                                //this.showMessagesResponse(response);                            
+                                                //MessageBox.success(this.getI18nTexts().getText("successTransferencia"));
+
+                                            }.bind(this),
+                                            error: function (oError) {
+                                                sap.ui.core.BusyIndicator.hide();
+                                                this.getView().setBusy(false);
+                                                this.oDialogTransferirLpn.setBusy(false);
+                                                //this.oDialogTransferirLpn.close();
+                                                this.getView().getModel().refresh();
+                                                //this.showMessagesResponse(response);                            
+                                                //MessageBox.success(this.getI18nTexts().getText("successTransferencia"));
+                                                MessageBox.success("Erro na atualização da posição");
+
+                                                reject(oError)
+                                            }
+                                        })
+                                    });
+
+                                }
+
+                            }.bind(this),
+
+                            error: function (error, response) {
+                                sap.ui.core.BusyIndicator.hide();
+                                this.getView().setBusy(false);
+                                this.oDialogTransferirLpn.setBusy(false);
+                                this.buildMessage(tableMessage, JSON.parse(error.responseText).error.innererror.errordetails);
+                                this.showMessage(tableMessage, this);
+                            }.bind(this),
+                        });
+                    }
+                }
+
+
+**/
+      },
     });
   }
 );

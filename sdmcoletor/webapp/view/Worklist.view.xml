@@ -139,23 +139,9 @@
                                 type="Emphasized"
                                 press=".onRefreshPress"/>
                     </VBox>
-                    <!--   <SearchField
-                            id="searchDU"                         
-                            placeholder="L.DU"
-                             width="8rem"
-                            liveChange=".onSearchDU"/>  -->
-                    <!--         <Button text="Adicionar" press="onAddMaterial" class="sapUiTinyMarginBegin"/>
-                    <Button text="Mostrar no Console" press="onShowArray" class="sapUiTinyMarginBegin"/>
+
                     
-                     path: '/ZC_SDM_MOVLPN',
-                                     items="{        path: 'MovLpn>/',     
-               
-            sorter: [
-            { path: 'lpn', descending: false },
-            { path: 'centro', descending: false },
-            { path: 'deposito_origem', descending: false } ]
                     
-                    -->
                 </HBox>
             </Panel>
         </semantic:headerContent>
