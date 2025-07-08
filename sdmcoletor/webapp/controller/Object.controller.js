@@ -50,43 +50,43 @@ sap.ui.define(
         const oMovOData = this.getOwnerComponent().getModel("MovLpn"); // modelo OData v2
         oMovOData.setSizeLimit(5000); // >100 linhas
 
-        oMovOData.read("ZCDS_SDM_MOVIMENTA_LPN", {
-          urlParameters: {
-            $filter: sCentro ? `centro eq '${sCentro}'` : undefined,
-            $top: "5000",
-          },
-          success: function (oData) {
-            /* guarda universo completo de LPN do centro */
-            oView.setModel(
-              new sap.ui.model.json.JSONModel(oData.results),
-              "MovLpnCentro"
-            );
+        // oMovOData.read("ZCDS_SDM_MOVIMENTA_LPN", {
+        //   urlParameters: {
+        //     $filter: sCentro ? `centro eq '${sCentro}'` : undefined,
+        //     $top: "5000",
+        //   },
+        //   success: function (oData) {
+        //     /* guarda universo completo de LPN do centro */
+        //     oView.setModel(
+        //       new sap.ui.model.json.JSONModel(oData.results),
+        //       "MovLpnCentro"
+        //     );
 
-            /* gera lista única de depósito/posição — opcional, útil p/ debug */
-            const aUnicos = [];
-            const oKeySet = {};
-            oData.results.forEach((it) => {
-              const k = `${it.deposito_origem}-${it.posicao_origem}`;
-              if (!oKeySet[k]) {
-                oKeySet[k] = true;
-                aUnicos.push(it);
-              }
-            });
-            aUnicos.sort((a, b) =>
-              a.posicao_origem.localeCompare(b.posicao_origem)
-            );
-            oView.setModel(
-              new sap.ui.model.json.JSONModel(aUnicos),
-              "DepPosData"
-            );
+        //     /* gera lista única de depósito/posição — opcional, útil p/ debug */
+        //     const aUnicos = [];
+        //     const oKeySet = {};
+        //     oData.results.forEach((it) => {
+        //       const k = `${it.deposito_origem}-${it.posicao_origem}`;
+        //       if (!oKeySet[k]) {
+        //         oKeySet[k] = true;
+        //         aUnicos.push(it);
+        //       }
+        //     });
+        //     aUnicos.sort((a, b) =>
+        //       a.posicao_origem.localeCompare(b.posicao_origem)
+        //     );
+        //     oView.setModel(
+        //       new sap.ui.model.json.JSONModel(aUnicos),
+        //       "DepPosData"
+        //     );
 
-            this.onConcatenaSelect(); // roda se DepPostZZ1 já estiver carregado
-          }.bind(this),
-          error: (err) => {
-            sap.m.MessageToast.show("Erro ao carregar ZC_SDM_MOVLPN");
-            console.error(err);
-          },
-        });
+        //     this.onConcatenaSelect(); // roda se DepPostZZ1 já estiver carregado
+        //   }.bind(this),
+        //   error: (err) => {
+        //     sap.m.MessageToast.show("Erro ao carregar ZC_SDM_MOVLPN");
+        //     console.error(err);
+        //   },
+        // });
 
         /* ────────────────────────────────────────────────────────────────
          * 3. Ler depósitos/posições válidos do centro (ZZ1_SDM_DEP_POS)
@@ -453,7 +453,7 @@ sap.ui.define(
         oOD.setSizeLimit(5000);
 
         let aMov, aTra;
-        const merge = function () {
+        const merge = () => {   
           if (!aMov || !aTra) return;
 
           const oHash = {};
@@ -480,10 +480,11 @@ sap.ui.define(
           });
 
           oView.setModel(new JSONModel(aMerge), "MovLpnCentro");
+          this.onConcatenaSelect(); 
         };
 
         // 1. MOVIMENTA
-        oOD.read("ZCDS_SDM_MOVIMENTA_LPN", {
+        oOD.read("/ZCDS_SDM_MOVIMENTA_LPN", {
           urlParameters: {
             $filter: sCentro ? `centro eq '${sCentro}'` : undefined,
             $top: "5000",
@@ -496,7 +497,7 @@ sap.ui.define(
         });
 
         // 2. TRANSFERE
-        oOD.read("ZCDS_SDM_TRANSFERE_LPN", {
+        oOD.read("/ZCDS_SDM_TRANSFERE_LPN", {
           urlParameters: {
             $filter: sCentro ? `centro eq '${sCentro}'` : undefined,
             $top: "5000",
