@@ -36,7 +36,7 @@
                             <!--  
                             <Select
                             id="idSelectHeaderDepDestino"
-                            items="{DepDestinoConcat>/}"
+                            items="{DepDestinoConcat>/ }"
                             selectedKey="{/depositoSelecionado}"
                             change=".onChangeDepoDestHeader">
                                 <core:Item key="{DepDestinoConcat>DEPOSITO}" text="{DepDestinoConcat>TEXTO}" />
@@ -171,7 +171,7 @@
                 </items>
             </Table>
         </semantic:content>
-        <!--      <semantic:sendEmailAction>
+        <!--      <semantic:sendEmailAction>  RVC
             <semantic:SendEmailAction id="shareEmail" press=".onShareEmailPress"/>
         </semantic:sendEmailAction>
          Custom Footer Content

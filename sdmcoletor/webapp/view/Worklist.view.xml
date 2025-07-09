@@ -30,7 +30,8 @@
                         <!-- Pesquisa por Centro -->
                         <Label id="idLabel13" text="Centro"  design="Bold"/>
                         <SearchField
-                                id="searchFieldCentro"                         
+                                id="searchFieldCentro" 
+                                                        
                             placeholder=""
                              width="8.3rem"
                             liveChange=".onCentroChange" />
@@ -93,7 +94,7 @@
                             change=".onFilterTabelaCompleta"                            
                             items="{PosicaoFilter>/}"
                             width="8.6rem"
-                            selectedKey="">
+                            selectedKey="" >
                             <core:Item key="{PosicaoFilter>key}" text="{PosicaoFilter>text}" />
                         </Select>
                             -->
@@ -237,7 +238,7 @@
                 </columns>
                 <items>
                     <ColumnListItem id="idCol02"
-                        type="Navigation"
+                        type="Inactive"
                         press=".onPress" >
                         <cells>
                             <!--                         highlight="{= ${SelecionadosParaTransporte>DU} === 'BLOQ.' ? 'Error' : ${SelecionadosParaTransporte>DU} === 'LIB.' ? 'Success' : 'None'}"> -->

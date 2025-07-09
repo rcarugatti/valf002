@@ -29,7 +29,18 @@
         "settings": {
           "odataVersion": "2.0"
         }
-      }
+      },
+                  "materialDocument": {
+                "uri": "/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/",
+                "type": "OData",
+                "settings": {
+                    "odataVersion": "2.0",
+                    "annotations": [
+                        "materialDocument_Annotation"
+                    ],
+                    "localUri": "localService/metadata.xml"
+                }
+            }
     }
   },
   "sap.ui": {
@@ -85,7 +96,19 @@
         "preload": true,
         "settings": {},
         "type": "sap.ui.model.odata.v2.ODataModel"
-      }
+      },
+            "materialDocumentModel": {
+                "dataSource": "materialDocument",
+                "preload": true,
+                "settings": {
+                    "defaultBindingMode": "TwoWay",
+                    "defaultCountMode": "Inline",
+                    "refreshAfterChange": false
+                }
+            }
+
+
+
     },
     "resources": {
       "css": [

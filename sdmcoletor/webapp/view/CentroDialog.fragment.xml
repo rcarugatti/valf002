@@ -1,0 +1,18 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+  <Dialog id="dlgCentro" title="Informe o Centro" draggable="true" resizable="false"
+          escapeHandler="onCloseCentroDialog">
+    <VBox id="vbx1" class="sapUiSmallMargin sapUiTinyMarginTop">
+      <Input id="inpCentro"
+             value="{Centro>/centro}"
+             placeholder="Ex.: C100"
+             required="true"
+             liveChange=".onCentroChange"/>
+    </VBox>
+
+    <beginButton>
+      <Button id="bt1" text="OK"
+              press=".onConfirmCentro"
+              enabled="{= ${Centro>/centro}.length > 0 }"/>
+    </beginButton>
+  </Dialog>
+</core:FragmentDefinition>

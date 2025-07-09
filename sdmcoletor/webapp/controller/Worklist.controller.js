@@ -122,6 +122,7 @@ sap.ui.define(
       onInit: function () {
         this.byId("page").addStyleClass("zoom70");
         var oViewModel;
+ 
         // debugger;
         // keeps the search state
         this._aTableSearchState = [];
@@ -956,7 +957,7 @@ sap.ui.define(
         error  : console.error
       });
 
-      // 2. TRANSFERE
+      // 2. TRANSFERE  RVC
       oOData.read("/ZCDS_SDM_TRANSFERE_LPN", {
         urlParameters: { $top: "5000" },
         success: oData => { aTra = oData.results; merge(); },

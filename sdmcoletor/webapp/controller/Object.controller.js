@@ -338,7 +338,16 @@ sap.ui.define(
       onSalvarPress: function () {
         const oFuncModel = this.getOwnerComponent().getModel("MovimentaLpn");
         const oTable = this.byId("objectTable");
-
+        var  modelAction = this.getView().getModel();
+        // Estrutura API Documento Material
+        var modelMaterialDocument = this.getView().getModel("materialDocumentModel");                 
+        var materialDocumentWithItems = {
+          MaterialDocument: "",
+          GoodsMovementCode: "04",
+          to_MaterialDocumentItem: {
+            results: [],
+          },
+        };
         // ← remove o parâmetro truen
         const aCtx = oTable.getBinding("items").getContexts();
 
@@ -354,6 +363,34 @@ sap.ui.define(
             //  continue;
             return;
           }
+          // Transferência Depósito Origem e Destino distintos -> Chamar API e gerar documento material
+const fmtQty = q => String(Number(q).toFixed(3));  // garante 3 decimais
+   
+          if (
+            oData.deposito_origem !== oData.deposito_destino &&
+            oData.flgFree !== ""
+          ) {
+
+
+            materialDocumentWithItems.to_MaterialDocumentItem.results.push({
+              Material: oData.material,
+              Plant: oData.centro,
+              StorageLocation: oData.deposito_origem,
+              Batch: oData.lote_logistico,
+              GoodsMovementType: "311",
+              IssgOrRcvgMaterial: oData.material,
+              IssgOrRcvgBatch: oData.lote_logistico,
+              IssuingOrReceivingPlant: oData.centro,
+              IssuingOrReceivingStorageLoc: oData.deposito_destino,
+              EntryUnit: oData.unidade_medida,
+              QuantityInEntryUnit: fmtQty(oData.quantidade),
+            });
+
+
+
+
+
+          }
 
           const oParams = {
             material: oData.material,
@@ -365,7 +402,7 @@ sap.ui.define(
             posicao_destino: oData.posicao_destino,
           };
 
-          oFuncModel.callFunction("/transferir_lpn", {
+  /*        oFuncModel.callFunction("/transferir_lpn", {
             method: "POST",
             groupId: "transferirLpn",
             urlParameters: oParams,
@@ -377,8 +414,96 @@ sap.ui.define(
               sap.m.MessageBox.error(`Erro ao transferir LPN ${oData.lpn}`);
               console.error(err);
             },
-          });
+          }); */
+//Inicio ===========================================================================
+// Transferência Depósito Origem e Destino distintos 
+                    if (materialDocumentWithItems.to_MaterialDocumentItem.results.length > 0) {
+                        modelMaterialDocument.create("/A_MaterialDocumentHeader", materialDocumentWithItems, {
+                            success: function (odata, response) {
 
+                                if (updateCboPosicao.results.length > 0) {
+
+                                    updateCboPosicao.results.forEach(element => {
+                                        // Atualização CBO Posição
+                                        modelAction.callFunction(
+                                            "/transferir_lpn", {
+                                            method: "POST",
+                                            groupId: "transferirLpn",
+                                            urlParameters: {
+                                                material: element.material,
+                                                lpn: element.lpn,
+                                                centro: element.centro,
+                                                deposito_origem: element.deposito_origem,
+                                                posicao_origem: element.posicao_origem,
+                                                deposito_destino: element.deposito_destino,
+                                                posicao_destino: element.posicao_destino,
+                                            },
+                                            success: function (oData, response) {
+
+                                                if (updateCboLog.results.length > 0) {
+                                                    updateCboLog.results.forEach(element => {
+                                                        // Atualização CBO Log Movimentação LPN
+                                                        modelAction.callFunction(
+                                                            "/criar_log_mov_lpn", {
+                                                            method: "POST",
+                                                            groupId: "criarLogMovLpn",
+                                                            urlParameters: {
+                                                                material: element.material,
+                                                                lpn: element.lpn,
+                                                                centro: element.centro,
+                                                                deposito_origem: element.deposito_origem,
+                                                                posicao_origem: element.posicao_origem,
+                                                                deposito_destino: element.deposito_destino,
+                                                                posicao_destino: element.posicao_destino,
+                                                            },
+                                                            success: function (oData, response) {
+                                                            }.bind(this),
+                                                            error: function (oError) {
+                                                                reject(oError)
+                                                            }
+                                                        });
+                                                    })
+                                                }
+
+                                                sap.ui.core.BusyIndicator.hide();
+                                                this.getView().setBusy(false);
+                                                this.oDialogTransferirLpn.setBusy(false);
+                                                this.oDialogTransferirLpn.close();
+                                                this.getView().getModel().refresh();
+                                                //this.showMessagesResponse(response);                            
+                                                //MessageBox.success(this.getI18nTexts().getText("successTransferencia"));
+
+                                            }.bind(this),
+                                            error: function (oError) {
+                                                sap.ui.core.BusyIndicator.hide();
+                                                this.getView().setBusy(false);
+                                                this.oDialogTransferirLpn.setBusy(false);
+                                                //this.oDialogTransferirLpn.close();
+                                                this.getView().getModel().refresh();
+                                                //this.showMessagesResponse(response);                            
+                                                //MessageBox.success(this.getI18nTexts().getText("successTransferencia"));
+                                                MessageBox.success("Erro na atualização da posição");
+
+                                                reject(oError)
+                                            }
+                                        })
+                                    });
+
+                                }
+
+                            }.bind(this),
+
+                            error: function (error, response) {
+                                sap.ui.core.BusyIndicator.hide();
+                                this.getView().setBusy(false);
+                                this.oDialogTransferirLpn.setBusy(false);
+                                this.buildMessage(tableMessage, JSON.parse(error.responseText).error.innererror.errordetails);
+                                this.showMessage(tableMessage, this);
+                            }.bind(this),
+                        });
+                    }
+                
+//Fim    ==============================================================================
           iOK++;
         }
 
@@ -453,7 +578,7 @@ sap.ui.define(
         oOD.setSizeLimit(5000);
 
         let aMov, aTra;
-        const merge = () => {   
+        const merge = () => {
           if (!aMov || !aTra) return;
 
           const oHash = {};
@@ -480,7 +605,7 @@ sap.ui.define(
           });
 
           oView.setModel(new JSONModel(aMerge), "MovLpnCentro");
-          this.onConcatenaSelect(); 
+          this.onConcatenaSelect();
         };
 
         // 1. MOVIMENTA
