@@ -338,9 +338,12 @@ sap.ui.define(
       onSalvarPress: function () {
         const oFuncModel = this.getOwnerComponent().getModel("MovimentaLpn");
         const oTable = this.byId("objectTable");
-        var  modelAction = this.getView().getModel();
+        var modelAction = this.getView().getModel();
         // Estrutura API Documento Material
-        var modelMaterialDocument = this.getView().getModel("materialDocumentModel");                 
+
+        var modelMaterialDocument = this.getView().getModel(
+          "materialDocumentModel"
+        );
         var materialDocumentWithItems = {
           MaterialDocument: "",
           GoodsMovementCode: "04",
@@ -348,6 +351,13 @@ sap.ui.define(
             results: [],
           },
         };
+        // Estrutura para chamada Atualizar CBOs
+        var updateCboPosicao = {
+            results: [],
+          },
+          updateCboLog = {
+            results: [],
+          };
         // ← remove o parâmetro truen
         const aCtx = oTable.getBinding("items").getContexts();
 
@@ -364,14 +374,12 @@ sap.ui.define(
             return;
           }
           // Transferência Depósito Origem e Destino distintos -> Chamar API e gerar documento material
-const fmtQty = q => String(Number(q).toFixed(3));  // garante 3 decimais
-   
+          const fmtQty = (q) => String(Number(q).toFixed(3)); // garante 3 decimais
+
           if (
             oData.deposito_origem !== oData.deposito_destino &&
             oData.flgFree !== ""
           ) {
-
-
             materialDocumentWithItems.to_MaterialDocumentItem.results.push({
               Material: oData.material,
               Plant: oData.centro,
@@ -385,14 +393,18 @@ const fmtQty = q => String(Number(q).toFixed(3));  // garante 3 decimais
               EntryUnit: oData.unidade_medida,
               QuantityInEntryUnit: fmtQty(oData.quantidade),
             });
-
-
-
-
-
           }
 
           const oParams = {
+            material: oData.material,
+            lpn: oData.lpn,
+            centro: oData.centro,
+            deposito_origem: oData.deposito_origem, //oData.deposito_origem,
+            posicao_origem: oData.posicao_origem,
+            deposito_destino: oData.deposito_destino,
+            posicao_destino: oData.posicao_destino,
+          };
+          updateCboPosicao.results.push({
             material: oData.material,
             lpn: oData.lpn,
             centro: oData.centro,
@@ -400,9 +412,8 @@ const fmtQty = q => String(Number(q).toFixed(3));  // garante 3 decimais
             posicao_origem: oData.posicao_origem,
             deposito_destino: oData.deposito_destino,
             posicao_destino: oData.posicao_destino,
-          };
-
-  /*        oFuncModel.callFunction("/transferir_lpn", {
+          });
+          /*        oFuncModel.callFunction("/transferir_lpn", {
             method: "POST",
             groupId: "transferirLpn",
             urlParameters: oParams,
@@ -415,95 +426,101 @@ const fmtQty = q => String(Number(q).toFixed(3));  // garante 3 decimais
               console.error(err);
             },
           }); */
-//Inicio ===========================================================================
-// Transferência Depósito Origem e Destino distintos 
-                    if (materialDocumentWithItems.to_MaterialDocumentItem.results.length > 0) {
-                        modelMaterialDocument.create("/A_MaterialDocumentHeader", materialDocumentWithItems, {
-                            success: function (odata, response) {
+          //Inicio ===========================================================================
+          // Transferência Depósito Origem e Destino distintos
+          if (
+            materialDocumentWithItems.to_MaterialDocumentItem.results.length > 0
+          ) {
+            modelMaterialDocument.create(
+              "/A_MaterialDocumentHeader",
+              materialDocumentWithItems,
+              {
+                success: function (odata, response) {
+                  if (updateCboPosicao.results.length > 0) {
+                    updateCboPosicao.results.forEach((element) => {
+                      // Atualização CBO Posição
+                      oFuncModel.callFunction("/transferir_lpn", {
+                        method: "POST",
+                        groupId: "transferirLpn",
+                        urlParameters: oParams,
+                        /*       modelAction.callFunction("/transferir_lpn", {
+                        method: "POST",
+                        groupId: "transferirLpn",
+                        urlParameters: {
+                          material: element.material,
+                          lpn: element.lpn,
+                          centro: element.centro,
+                          deposito_origem: element.deposito_origem,
+                          posicao_origem: element.posicao_origem,
+                          deposito_destino: element.deposito_destino,
+                          posicao_destino: element.posicao_destino, */
 
-                                if (updateCboPosicao.results.length > 0) {
+                        success: function (oData, response) {
+                          if (updateCboLog.results.length > 0) {
+                            updateCboLog.results.forEach((element) => {
+                              // Atualização CBO Log Movimentação LPN
+                              modelAction.callFunction("/criar_log_mov_lpn", {
+                                method: "POST",
+                                groupId: "criarLogMovLpn",
+                                urlParameters: {
+                                  material: element.material,
+                                  lpn: element.lpn,
+                                  centro: element.centro,
+                                  deposito_origem: element.deposito_origem,
+                                  posicao_origem: element.posicao_origem,
+                                  deposito_destino: element.deposito_destino,
+                                  posicao_destino: element.posicao_destino,
+                                },
+                                success: function (oData, response) {}.bind(
+                                  this
+                                ),
+                                error: function (oError) {
+                                  reject(oError);
+                                },
+                              });
+                            });
+                          }
 
-                                    updateCboPosicao.results.forEach(element => {
-                                        // Atualização CBO Posição
-                                        modelAction.callFunction(
-                                            "/transferir_lpn", {
-                                            method: "POST",
-                                            groupId: "transferirLpn",
-                                            urlParameters: {
-                                                material: element.material,
-                                                lpn: element.lpn,
-                                                centro: element.centro,
-                                                deposito_origem: element.deposito_origem,
-                                                posicao_origem: element.posicao_origem,
-                                                deposito_destino: element.deposito_destino,
-                                                posicao_destino: element.posicao_destino,
-                                            },
-                                            success: function (oData, response) {
+                          sap.ui.core.BusyIndicator.hide();
+                          this.getView().setBusy(false);
+                          this.oDialogTransferirLpn.setBusy(false);
+                          this.oDialogTransferirLpn.close();
+                          this.getView().getModel().refresh();
+                          this.showMessagesResponse(response);
+                          MessageBox.success(this.getI18nTexts().getText("successTransferencia"));
+                        }.bind(this),
+                        error: function (oError) {
+                          sap.ui.core.BusyIndicator.hide();
+                          this.getView().setBusy(false);
+                          this.oDialogTransferirLpn.setBusy(false);
+                          //this.oDialogTransferirLpn.close();
+                          this.getView().getModel().refresh();
+                          //this.showMessagesResponse(response);
+                          //MessageBox.success(this.getI18nTexts().getText("successTransferencia"));
+                          MessageBox.success("Erro na atualização da posição");
 
-                                                if (updateCboLog.results.length > 0) {
-                                                    updateCboLog.results.forEach(element => {
-                                                        // Atualização CBO Log Movimentação LPN
-                                                        modelAction.callFunction(
-                                                            "/criar_log_mov_lpn", {
-                                                            method: "POST",
-                                                            groupId: "criarLogMovLpn",
-                                                            urlParameters: {
-                                                                material: element.material,
-                                                                lpn: element.lpn,
-                                                                centro: element.centro,
-                                                                deposito_origem: element.deposito_origem,
-                                                                posicao_origem: element.posicao_origem,
-                                                                deposito_destino: element.deposito_destino,
-                                                                posicao_destino: element.posicao_destino,
-                                                            },
-                                                            success: function (oData, response) {
-                                                            }.bind(this),
-                                                            error: function (oError) {
-                                                                reject(oError)
-                                                            }
-                                                        });
-                                                    })
-                                                }
+                          reject(oError);
+                        },
+                      });
+                    });
+                  }
+                }.bind(this),
 
-                                                sap.ui.core.BusyIndicator.hide();
-                                                this.getView().setBusy(false);
-                                                this.oDialogTransferirLpn.setBusy(false);
-                                                this.oDialogTransferirLpn.close();
-                                                this.getView().getModel().refresh();
-                                                //this.showMessagesResponse(response);                            
-                                                //MessageBox.success(this.getI18nTexts().getText("successTransferencia"));
+                error: function (error, response) {
+                  sap.ui.core.BusyIndicator.hide();
+                  this.getView().setBusy(false);
+                  this.oDialogTransferirLpn.setBusy(false);
+                  this.buildMessage(
+                    tableMessage,
+                    JSON.parse(error.responseText).error.innererror.errordetails
+                  );
+                  this.showMessage(tableMessage, this);
+                }.bind(this),
+              }
+            );
+          }
 
-                                            }.bind(this),
-                                            error: function (oError) {
-                                                sap.ui.core.BusyIndicator.hide();
-                                                this.getView().setBusy(false);
-                                                this.oDialogTransferirLpn.setBusy(false);
-                                                //this.oDialogTransferirLpn.close();
-                                                this.getView().getModel().refresh();
-                                                //this.showMessagesResponse(response);                            
-                                                //MessageBox.success(this.getI18nTexts().getText("successTransferencia"));
-                                                MessageBox.success("Erro na atualização da posição");
-
-                                                reject(oError)
-                                            }
-                                        })
-                                    });
-
-                                }
-
-                            }.bind(this),
-
-                            error: function (error, response) {
-                                sap.ui.core.BusyIndicator.hide();
-                                this.getView().setBusy(false);
-                                this.oDialogTransferirLpn.setBusy(false);
-                                this.buildMessage(tableMessage, JSON.parse(error.responseText).error.innererror.errordetails);
-                                this.showMessage(tableMessage, this);
-                            }.bind(this),
-                        });
-                    }
-                
-//Fim    ==============================================================================
+          //Fim    ==============================================================================
           iOK++;
         }
 

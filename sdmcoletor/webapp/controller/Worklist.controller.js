@@ -15,54 +15,60 @@ sap.ui.define(
       /* =========================================================== */
       /* lifecycle methods                                           */
       /* =========================================================== */
-         onValidarEntradas: function () {
-      /* 1. Validação do Centro ---------------------------------- */
-      let sCentro = "";
-      const oCentroModel = sap.ui.getCore().getModel("CentroSelecionado");
-      if (oCentroModel) {
-        sCentro = (oCentroModel.getProperty("/centro") || "").trim();
-      }
-      if (!sCentro) {
-        sap.m.MessageToast.show("Preencha o campo Centro antes de prosseguir.");
-        return;
-      }
-
-      const oTable = this.byId("table");
-
-      // Captura diretamente os contextos selecionados
-      const aCtx = oTable.getSelectedContexts("rawModel");   // garantia do modelo
-      if (!aCtx.length) {
-        sap.m.MessageToast.show("Selecione ao menos um item para transportar.");
-        return;
-      }
-
-      const aSelecionados = [];
-      let sTipoDU = null;
-      let sObjectId = null;
-
-      for (let i = 0; i < aCtx.length; i++) {
-        const oCtx = aCtx[i];
-        const sDU  = oCtx.getProperty("DU");
-
-        if (!sTipoDU) {
-          sTipoDU = sDU;              // primeira linha define o tipo
-        } else if (sDU !== sTipoDU) {
-          sap.m.MessageToast.show("Somente aceita DU do mesmo Tipo");
-          return;                     // abandona sem navegar
+      onValidarEntradas: function () {
+        /* 1. Validação do Centro ---------------------------------- */
+        let sCentro = "";
+        const oCentroModel = sap.ui.getCore().getModel("CentroSelecionado");
+        if (oCentroModel) {
+          sCentro = (oCentroModel.getProperty("/centro") || "").trim();
+        }
+        if (!sCentro) {
+          sap.m.MessageToast.show(
+            "Preencha o campo Centro antes de prosseguir."
+          );
+          return;
         }
 
-        const oObj = oCtx.getObject();
-        aSelecionados.push(oObj);
-        if (!sObjectId) { sObjectId = oObj.lpn; }
-      }
+        const oTable = this.byId("table");
 
-      // Salva e navega
-      sap.ui.getCore().setModel(new JSONModel(aSelecionados), "SelecionadosParaTransporte");
-      this.getRouter().navTo("object", { objectId: sObjectId }, true);
-  
-    },
+        // Captura diretamente os contextos selecionados
+        const aCtx = oTable.getSelectedContexts("rawModel"); // garantia do modelo
+        if (!aCtx.length) {
+          sap.m.MessageToast.show(
+            "Selecione ao menos um item para transportar."
+          );
+          return;
+        }
 
-  
+        const aSelecionados = [];
+        let sTipoDU = null;
+        let sObjectId = null;
+
+        for (let i = 0; i < aCtx.length; i++) {
+          const oCtx = aCtx[i];
+          const sDU = oCtx.getProperty("DU");
+
+          if (!sTipoDU) {
+            sTipoDU = sDU; // primeira linha define o tipo
+          } else if (sDU !== sTipoDU) {
+            sap.m.MessageToast.show("Somente aceita DU do mesmo Tipo");
+            return; // abandona sem navegar
+          }
+
+          const oObj = oCtx.getObject();
+          aSelecionados.push(oObj);
+          if (!sObjectId) {
+            sObjectId = oObj.lpn;
+          }
+        }
+
+        // Salva e navega
+        sap.ui
+          .getCore()
+          .setModel(new JSONModel(aSelecionados), "SelecionadosParaTransporte");
+        this.getRouter().navTo("object", { objectId: sObjectId }, true);
+      },
+
       /**
       onValidarEntradas: function () {
         var oTable = this.byId("table");
@@ -122,7 +128,7 @@ sap.ui.define(
       onInit: function () {
         this.byId("page").addStyleClass("zoom70");
         var oViewModel;
- 
+
         // debugger;
         // keeps the search state
         this._aTableSearchState = [];
@@ -177,10 +183,7 @@ sap.ui.define(
                 });
               }
             });
-            //          oModel.read("/ZC_SDM_MOVLPN", {
-            //            success: function (oData) {
-            //              var oRawModel = new sap.ui.model.json.JSONModel(oData.results);
-            //              this.getView().setModel(oRawModel, "rawModel");
+
 
             var oDepositosModel = new sap.ui.model.json.JSONModel(aDepositos);
             this.getView().setModel(oDepositosModel, "DepositosDestino");
@@ -441,6 +444,8 @@ sap.ui.define(
         oBinding.filter(aFilters);
       },
       onFilterTabelaCompleta: function () {
+
+
         var oView = this.getView();
         // ➜  Atualiza lista de posições sempre que o depósito muda
         var sDepositoSelecionado = oView
@@ -460,7 +465,9 @@ sap.ui.define(
 
         // ✅ Se centro estiver vazio, não permite buscar 21062025 1018
         if (!sCentro) {
-          sap.m.MessageToast.show("Preencha o Centro para buscar os dados.");
+          sap.m.MessageToast.show("Preencha o Centro para buscar os dados.");         
+          oView.byId("idSelectDU").setSelectedKey("TD."); // limpa DU  inválida         
+        
           return;
         }
 
@@ -663,179 +670,9 @@ sap.ui.define(
       onRefreshPress: function () {
         window.location.reload();
 
-        /*
-        var oView = this.getView();
-
-        // 1. Limpa todos os campos do cabeçalho
-        oView.byId("searchFieldCentro")?.setValue("");
-        oView.byId("searchFieldMaterial")?.setValue("");
-        oView.byId("searchLoteSDM")?.setValue("");
-        oView.byId("idSelectDeposito")?.setSelectedKey("");
-        oView.byId("idComboPosicao")?.setSelectedKey("");
-        oView.byId("idSelectDU")?.setSelectedKey("TD.");
-        oView.byId("inputMaterial")?.setValue("");
-
-        // 2. Limpa modelo auxiliar de materiais digitados
-        var oMaterialsModel = oView.getModel("materialsLPN");
-        if (oMaterialsModel) {
-          oMaterialsModel.setData({ materialsLPN: [] });
-        }
-
-        // 3. Restaura os dados originais (4900 registros) do rawModel no filteredModel
-        var oRawModel = oView.getModel("rawModel");
-        if (oRawModel && Array.isArray(oRawModel.getData())) {
-          var oFilteredModel = oView.getModel("filteredModel");
-          if (!oFilteredModel) {
-            oFilteredModel = new sap.ui.model.json.JSONModel();
-            oView.setModel(oFilteredModel, "filteredModel");
-          }
-          oFilteredModel.setData(oRawModel.getData());
-        }
-
-        // 4. Limpa filtros visuais da tabela
-        var oTable = oView.byId("table");
-        var oBinding = oTable.getBinding("items");
-        if (oBinding) {
-          oBinding.filter([]);
-          oBinding.refresh();
-        }
-
-        // 5. Mensagem de feedback
-        sap.m.MessageToast.show("Aplicação reiniciada com sucesso."); */
       },
 
-      /* 
------>  onCentroChange: function (oEvent) {
-        var sCentro = oEvent.getSource().getValue().trim();
-
-        if (!sCentro) {
-          // Limpa filtro se o campo estiver vazio
-          this._applySearch([]);
-          return;
-        }
-
-        // Cria filtro para o campo 'centro'
-        var aFilters = [
-          new sap.ui.model.Filter(
-            "centro",
-            sap.ui.model.FilterOperator.Contains,
-            sCentro
-          ),
-        ];
-
-        // Aplica filtro na tabela
-        this._applySearch(aFilters);
-
-        // 🔧 Verifica se o rawModel já existe
-        var oRawData = this.getView().getModel("rawModel");
-        if (!oRawData) {
-          var oBinding = this.byId("table").getBinding("items");
-          if (oBinding) {
-            var aData = oBinding.getModel().getProperty(oBinding.getPath());
-            if (aData) {
-              var oRawModel = new sap.ui.model.json.JSONModel(aData);
-              this.getView().setModel(oRawModel, "rawModel");
-            }
-          }
-        }
-        this.onCentroChangeComFiltro();
-      },
-
-
------> onCentroChangeComFiltro: function () {
-        var oView = this.getView();
-        var oRawModel = oView.getModel("rawModel");
-        var sCentro = oView.byId("searchFieldCentro").getValue().trim();
-        var aOriginalData = oView.getModel("rawModel").getData();
-
-        if (!sCentro) {
-          oView.getModel("filteredModel").setData([]); // Limpa a tabela
-          return;
-        }
-
-        // Aplica filtro de Centro
-        var aFiltrados = aOriginalData.filter(function (item) {
-          return item.centro === sCentro;
-        });
-
-
-
-        oView.getModel("filteredModel").setData(aFiltrados);
-
-        // Atualiza selects
-        var aPosicoes = [],
-          aDepositos = [];
-        var mapPos = {},
-          mapDep = {};
-
-        aFiltrados.forEach(function (item) {
-          if (item.posicao_origem && !mapPos[item.posicao_origem]) {
-            mapPos[item.posicao_origem] = true;
-            aPosicoes.push({
-              key: item.posicao_origem,
-              text: item.posicao_origem,
-            });
-          }
-          if (item.deposito_origem && !mapDep[item.deposito_origem]) {
-            mapDep[item.deposito_origem] = true;
-            aDepositos.push({
-              key: item.deposito_origem,
-              text: item.deposito_origem,
-            });
-          }
-        });
-
-        oView.setModel(
-          new sap.ui.model.json.JSONModel(aPosicoes),
-          "PosicaoFilter"
-        );
-        oView.setModel(
-          new sap.ui.model.json.JSONModel(aDepositos),
-          "DepositoFilter"
-        );
-      },
-
-
-
-       
-
------>   onRefreshPress: function () {
-        var oView = this.getView();
-
-        // Limpa campos de pesquisa LINHA1
-        oView.byId("searchFieldCentro").setValue("");
-        oView.byId("searchFieldMaterial").setValue("");
-        oView.byId("searchLoteSDM").setValue("");
-        // Limpa campos de pesquisa LINHA2
-        oView.byId("idSelectDeposito").setValue("");
-        oView.byId("idComboPosicao").setValue("");
-        oView.byId("inputMaterial").setValue("");
-
-        // Limpa filtros no modelo "materialsLPN"
-        var oMaterialsModel = oView.getModel("materialsLPN");
-        if (oMaterialsModel) {
-          oMaterialsModel.setProperty("/materialsLPN", []);
-        }
-        // Restaura o filtro DEPOSITO para "Todos"
-        oView.byId("idSelectDeposito").setSelectedKey("TD.");
-        this.getModel("worklistView").setProperty("/duSelecionado", "TD.");
-        // Restaura o filtro POSICAO para "Todos"
-        oView.byId("idComboPosicao").setSelectedKey("TD.");
-        this.getModel("worklistView").setProperty("/duSelecionado", "TD.");
-        // Restaura o filtro DU para "Todos"
-        oView.byId("idSelectDU").setSelectedKey("TD.");
-        this.getModel("worklistView").setProperty("/duSelecionado", "TD.");
-
-        // Limpa os filtros da tabela
-        var oTable = this.byId("table");
-        var oBinding = oTable.getBinding("items");
-        if (oBinding) {
-          oBinding.filter([]); // Remove todos os filtros
-          oBinding.refresh(); // Força reload
-        }
-
-        sap.m.MessageToast.show("Tabela e filtros resetados.");
-      },   */
+  
 
       onSelectChange: function (oEvent) {
         const oTable = oEvent.getSource(); // <Table>
@@ -891,13 +728,13 @@ sap.ui.define(
        * @param {sap.m.ObjectListItem} oItem selected Item
        * @private
        */
-    /* =========================================================== */
-    /* navegação Worklist → Object                                 */
-    /* =========================================================== */
-    _showObject: function (oItem) {
-      const oObj = oItem.getBindingContext("rawModel").getObject();
-      this.getRouter().navTo("object", { objectId: oObj.lpn }, true);
-    },
+      /* =========================================================== */
+      /* navegação Worklist → Object                                 */
+      /* =========================================================== */
+      _showObject: function (oItem) {
+        const oObj = oItem.getBindingContext("rawModel").getObject();
+        this.getRouter().navTo("object", { objectId: oObj.lpn }, true);
+      },
       /* =========================================================== 
       _showObject: function (oItem) {
         this.getRouter().navTo(
@@ -914,56 +751,68 @@ sap.ui.define(
       },  */
 
       /**
-     * Faz dois OData.read em paralelo, mergeia os registros e publica
-     * no modelo "rawModel".
-     */
-    _loadMergedData: function () {
-      const oOData = this.getOwnerComponent().getModel();
-      let aMov, aTra;
+       * Faz dois OData.read em paralelo, mergeia os registros e publica
+       * no modelo "rawModel".
+       */
+      _loadMergedData: function () {
+        const oOData = this.getOwnerComponent().getModel();
+        let aMov, aTra;
 
-      const merge = function () {
-        if (!aMov || !aTra) return;
+        const merge = function () {
+          if (!aMov || !aTra) return;
 
-        const oHash = {};
-        aTra.forEach(t => {
-          oHash[`${t.lpn}-${t.centro}`] = t;
-        });
-
-        const aMerge = aMov.map(m => {
-          const t = oHash[`${m.lpn}-${m.centro}`] || {};
-
-          const nEst   = Number(m.quantidade  || 0);
-          const nQual  = Number(m.stck_qualid || m.StckQuant || 0);
-          const nTotal = nEst + nQual;
-          const sDU    = nQual > 0 ? "BLOQ." : "LIB.";
-
-          return Object.assign({}, m, {
-            deposito_origem  : t.deposito_origem  || m.deposito_origem,
-            posicao_origem   : t.posicao_origem   || m.posicao_origem,
-            deposito_destino : t.deposito_destino || m.deposito_destino,
-            posicao_destino  : t.posicao_destino  || m.posicao_destino,
-            quantidade       : nTotal,
-            DU               : sDU,
+          const oHash = {};
+          aTra.forEach((t) => {
+            oHash[`${t.lpn}-${t.centro}`] = t;
           });
+
+            const aMerge = aMov.map((m) => {
+            const t = oHash[`${m.lpn}-${m.centro}`] || {};
+
+            const nEst = Number(m.quantidade || 0);
+            const nQual = Number(m.stck_qualid || m.StckQuant || 0);
+            const nTotal = nEst + nQual;
+            const sDU = nQual > 0 ? "BLOQ." : "LIB.";
+
+            return Object.assign({}, m, {
+              //deposito_origem: t.deposito_origem || m.deposito_origem,
+              //posicao_origem: t.posicao_origem || m.posicao_origem,
+              //deposito_destino: t.deposito_destino || m.deposito_destino,
+              //posicao_destino: t.posicao_destino || m.posicao_destino,
+
+              deposito_origem: t.deposito_origem   ?? m.deposito,
+              posicao_origem: t.posicao_origem     ?? m.posicao,
+              deposito_destino: t.deposito_destino ?? "",
+              posicao_destino: t.posicao_destino   ?? "",
+
+              quantidade: nTotal,
+              DU: sDU,
+            });
+          });
+
+          this.getView().setModel(new JSONModel(aMerge), "rawModel");
+        }.bind(this);
+
+        // 1. MOVIMENTA
+        oOData.read("/ZCDS_SDM_MOVIMENTA_LPN", {
+          urlParameters: { $top: "5000" },
+          success: (oData) => {
+            aMov = oData.results;
+            merge();
+          },
+          error: console.error,
         });
 
-        this.getView().setModel(new JSONModel(aMerge), "rawModel");
-      }.bind(this);
-
-      // 1. MOVIMENTA
-      oOData.read("/ZCDS_SDM_MOVIMENTA_LPN", {
-        urlParameters: { $top: "5000" },
-        success: oData => { aMov = oData.results; merge(); },
-        error  : console.error
-      });
-
-      // 2. TRANSFERE  RVC
-      oOData.read("/ZCDS_SDM_TRANSFERE_LPN", {
-        urlParameters: { $top: "5000" },
-        success: oData => { aTra = oData.results; merge(); },
-        error  : console.error
-      });
-    },  
+        // 2. TRANSFERE  RVC
+        oOData.read("/ZCDS_SDM_TRANSFERE_LPN", {
+          urlParameters: { $top: "5000" },
+          success: (oData) => {
+            aTra = oData.results;
+            merge();
+          },
+          error: console.error,
+        });
+      },
 
       /**
        * Internal helper method to apply both filter and search state together on the list binding

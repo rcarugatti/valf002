@@ -28,14 +28,28 @@
                 <HBox id="idHbox02" justifyContent="Start" alignItems="Center" class="sapUiSmallMarginBottom" >
                     <VBox id="idVbox01" class="sapUiSmallMarginEnd" >
                         <!-- Pesquisa por Centro -->
-                        <Label id="idLabel13" text="Centro"  design="Bold"/>
-                        <SearchField
+                   <!--      <Label id="idLabel13" text="Centro"  design="Bold"/>
+                         <SearchField
                                 id="searchFieldCentro" 
                                                         
                             placeholder=""
                              width="8.3rem"
                             liveChange=".onCentroChange" />
-                        <!-- search=".onSearch" ,  liveChange=".onCentroChangeComFiltro" -->
+                          -->
+                        <!-- Pesquisa por Centro -->
+<Label id="idLabel13"
+       text="Centro"
+       design="Bold"
+       required="true"/>   <!-- exibe o asterisco -->
+
+<Input id="searchFieldCentro"
+       required="true"           
+       width="8.3rem"
+       placeholder=""
+       showClearIcon="true"      
+       liveChange=".onCentroChange"
+       submit=".onFilterTabelaCompleta"/>  <!-- ENTER dispara a mesma busca ".onCentroChange" -->
+
                     </VBox>
                     <VBox id="idVbox02" class="sapUiSmallMarginEnd">
                         <!-- Pesquisa por Material -->
@@ -255,7 +269,7 @@
                             <Text id="idTextDepoOri" text=               "{rawModel>deposito_origem}"/>
                             <Text id="idTextPosiOri" text=               "{rawModel>posicao_origem}"/>
                             <!--    <Text text=               "{quant}"/> -->
-                            <Text id="idTextQuantidade" text="{= (+${rawModel>Quantidade} || 0) + (+${rawModel>StckQuant} || 0) }"/>
+                            <Text id="idTextQuantidade" text="{= (+${rawModel>quantidade} || 0) + (+${rawModel>StckQuant} || 0) }"/>
                             <Text id="idTexLoteSDM" text=               "{rawModel>lote_sdm}"/>
                         </cells>
                     </ColumnListItem>
