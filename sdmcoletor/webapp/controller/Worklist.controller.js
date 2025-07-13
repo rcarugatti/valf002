@@ -70,58 +70,6 @@ sap.ui.define(
       },
 
       /**
-      onValidarEntradas: function () {
-        var oTable = this.byId("table");
-        var aSelectedItems = oTable.getSelectedItems(); // <-- pega os selecionados via UI5
-        var aSelecionados = [];
-        var sTipoDU = null;
-        var sObjectId = null;
-
-        for (var i = 0; i < aSelectedItems.length; i++) {
-          var oContext = aSelectedItems[i].getBindingContext();
-          if (!oContext) {
-            continue;
-          }
-
-          var sDU = oContext.getProperty("DU");
-          if (!sTipoDU) {
-            sTipoDU = sDU;
-          } else if (sDU !== sTipoDU) {
-            sap.m.MessageToast.show("Somente aceita DU do mesmo Tipo");
-            return;
-          }
-
-          var oObj = oContext.getObject();
-          aSelecionados.push(oObj);
-
-          if (!sObjectId) {
-            sObjectId = oObj.lpn;
-          }
-        }
-
-        if (aSelecionados.length > 0) {
-          var oModelSelecionados = new sap.ui.model.json.JSONModel(
-            aSelecionados
-          );
-          sap.ui
-            .getCore()
-            .setModel(oModelSelecionados, "SelecionadosParaTransporte");
-
-          this.getRouter().navTo(
-            "object",
-            {
-              objectId: sObjectId,
-            },
-            true
-          );
-        } else {
-          sap.m.MessageToast.show(
-            "Selecione ao menos um item para transportar."
-          );
-        }
-      },
-
-      /**
        * Called when the worklist controller is instantiated.
        * @public
        */
@@ -161,13 +109,6 @@ sap.ui.define(
         this.setModel(oViewModel, "worklistView");
         // Leitura combinada MOVIMENTA + TRANSFERE
         this._loadMergedData();
-        // ✅ Modelo nomeado com dados vazios para garantir que a tabela comece em branco
-        //var oEmptyModel = new JSONModel({ results: [] });
-        //this.getView().setModel(oEmptyModel);
-
-        // ✅ Modelo base de LPN (vazio também)
-        //var oMaterialsModel = new JSONModel({ materialsLPN: [] });
-        //this.getView().setModel(oMaterialsModel, "materialsLPN");
 
         // Modelo nomeado para materiais
         var oMaterialsModel = new JSONModel({
@@ -177,7 +118,6 @@ sap.ui.define(
 
         // --- Novo código para criar modelo de depósitos únicos ---
         var oODataModel = this.getOwnerComponent().getModel();
-        // oODataModel.read("/ZC_SDM_MOV_LPN", {                                   -- RVC:05.06.2025
         oODataModel.read("/ZCDS_SDM_MOVIMENTA_LPN", {
           success: function (oData) {
             var aDepositos = [];
@@ -243,44 +183,10 @@ sap.ui.define(
 
         sap.m.MessageToast.show("Filtro aplicado para DU: " + sSelectedKey);
       },
-      /*    onRefreshPress: function () {
-        var oView = this.getView();
-
-        // Limpar Select DU
-        this.byId("idSelectDU").setSelectedKey("TD.");
-        this.getModel("worklistView").setProperty("/duSelecionado", "TD.");
-
-        // Limpar campos de busca (SearchFields e Input)
-        this.byId("searchFieldMaterial").setValue("");
-        this.byId("searchLoteSDM").setValue("");
-        this.byId("searchDepOrigem").setValue("");
-        this.byId("searchPosOrigem").setValue("");
-        this.byId("inputMaterial").setValue("");
-
-        // Limpar array de materiais digitados (se você estiver usando)
-        var oMaterialsModel = oView.getModel("materialsLPN");
-        if (oMaterialsModel) {
-          oMaterialsModel.setProperty("/materialsLPN", []);
-        }
-        // Reaplica o filtro da tabela com base em lista vazia
-        this.onShowArray(); // isso limpa o filtro de LPN se não houver mais itens
-
-        // Limpar filtros da tabela
-        var oTable = this.byId("table");
-        var oBinding = oTable.getBinding("items");
-        if (oBinding) {
-          oBinding.filter([]);
-          oBinding.refresh(); // Faz refresh dos dados no backend
-        }
-
-        sap.m.MessageToast.show("Tela redefinida e dados atualizados.");  
-      },*/
 
       /* =========================================================== */
       /* event handlers                                              */
       /* =========================================================== */
-      //this.getView().setModel(oMaterialsModel, "materials");
-      //},
       onAddMaterial: function () {
         console.log(this);
         const oView = this.getView();
@@ -289,7 +195,6 @@ sap.ui.define(
 
         if (!sMaterial) {
           sap.m.MessageToast.show("Digite um material.");
-          //MessageToast.show("Digite um material.");
           return;
         }
 
@@ -393,16 +298,6 @@ sap.ui.define(
             oCheckBox.getSelected()
           );
       },
-      /**        var oTable = this.byId("table");
-        var aItems = oTable.getItems();
-        var bAllSelected =
-          aItems.length > 0 &&
-          aItems.every(function (oItem) {
-            var oContext = oItem.getBindingContext();
-            return oContext && oContext.getProperty("selected");
-          });
-        this.byId("headerCheckBox").setSelected(bAllSelected);
-      },*/
 
       onHeaderCheckBoxSelect: function (oEvent) {
         var bSelected = oEvent.getParameter("selected");
@@ -532,10 +427,9 @@ sap.ui.define(
       },
 
       onChangePosicao: function () {
-        var sPosicao = this.byId("idComboPosicao").getSelectedKey(); // ou getValue() se quiser o texto
-        this.applyAllFilters(); // caso use filtro centralizado
+        var sPosicao = this.byId("idComboPosicao").getSelectedKey();
+        this.applyAllFilters();
       },
-      //  ==============================================================================================
 
       onCentroChangeComFiltro: function () {
         const oView = this.getView();
@@ -607,7 +501,6 @@ sap.ui.define(
         oPosModel.setData(aPosicoes);
       },
 
-      //=========================================================================
       onCentroChange: function (oEvent) {
         var sCentro = oEvent.getSource().getValue().trim();
         var oView = this.getView();
@@ -741,20 +634,6 @@ sap.ui.define(
         const oObj = oItem.getBindingContext("rawModel").getObject();
         this.getRouter().navTo("object", { objectId: oObj.lpn }, true);
       },
-      /* =========================================================== 
-      _showObject: function (oItem) {
-        this.getRouter().navTo(
-          "object",
-          {
-            objectId: oItem
-              .getBindingContext()
-              .getPath()
-              //      .substring("/ZC_SDM_MOV_LPN".length),                               -- RVC:05.06.2025
-              .substring("/ZCDS_SDM_MOVIMENTA_LPN".length),
-          },
-          true
-        );
-      },  */
 
       /**
        * Faz dois OData.read em paralelo, mergeia os registros e publica
