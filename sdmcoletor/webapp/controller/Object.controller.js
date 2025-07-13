@@ -485,9 +485,31 @@ sap.ui.define(
                           this.getView().setBusy(false);
                           this.oDialogTransferirLpn.setBusy(false);
                           this.oDialogTransferirLpn.close();
-                          this.getView().getModel().refresh();
-                          this.showMessagesResponse(response);
-                          MessageBox.success(this.getI18nTexts().getText("successTransferencia"));
+
+                          //this.getView().getModel().refresh();
+                          //this.showMessagesResponse(response);
+                          //MessageBox.success(this.getI18nTexts().getText("successTransferencia"));
+                          /* ── força a lista global a refazer o GET ── */
+                          this.getOwnerComponent()
+                            .getModel("MovLpn")
+                            .refresh(true);
+
+                          /* ── mostra a mensagem e navega de volta ── */
+                          MessageBox.success(
+                            this.getI18nTexts().getText("successTransferencia"),
+                            {
+                              onClose: function () {
+                                /* dispara um evento que o Worklist escuta (opcional) */
+                                sap.ui
+                                  .getCore()
+                                  .getEventBus()
+                                  .publish("Worklist", "Refresh");
+
+                                /* método já existente que volta à rota “worklist” */
+                                this.onNavBack(); // usa History ou navTo("worklist")
+                              }.bind(this),
+                            }
+                          );
                         }.bind(this),
                         error: function (oError) {
                           sap.ui.core.BusyIndicator.hide();

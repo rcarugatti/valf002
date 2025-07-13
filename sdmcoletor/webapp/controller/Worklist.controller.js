@@ -128,7 +128,19 @@ sap.ui.define(
       onInit: function () {
         this.byId("page").addStyleClass("zoom70");
         var oViewModel;
-
+        sap.ui
+          .getCore()
+          .getEventBus()
+          .subscribe(
+            "Worklist", // canal
+            "Refresh", // evento
+            function () {
+              // callback simples em linha
+              this.getOwnerComponent().getModel("MovLpn").refresh(true);
+              const oTbl = this.byId("table");
+              oTbl?.getBinding("items")?.refresh(); // se preciso
+            }.bind(this)
+          );
         // debugger;
         // keeps the search state
         this._aTableSearchState = [];
@@ -183,7 +195,6 @@ sap.ui.define(
                 });
               }
             });
-
 
             var oDepositosModel = new sap.ui.model.json.JSONModel(aDepositos);
             this.getView().setModel(oDepositosModel, "DepositosDestino");
@@ -444,8 +455,6 @@ sap.ui.define(
         oBinding.filter(aFilters);
       },
       onFilterTabelaCompleta: function () {
-
-
         var oView = this.getView();
         // ➜  Atualiza lista de posições sempre que o depósito muda
         var sDepositoSelecionado = oView
@@ -465,9 +474,9 @@ sap.ui.define(
 
         // ✅ Se centro estiver vazio, não permite buscar 21062025 1018
         if (!sCentro) {
-          sap.m.MessageToast.show("Preencha o Centro para buscar os dados.");         
-          oView.byId("idSelectDU").setSelectedKey("TD."); // limpa DU  inválida         
-        
+          sap.m.MessageToast.show("Preencha o Centro para buscar os dados.");
+          oView.byId("idSelectDU").setSelectedKey("TD."); // limpa DU  inválida
+
           return;
         }
 
@@ -669,10 +678,7 @@ sap.ui.define(
 
       onRefreshPress: function () {
         window.location.reload();
-
       },
-
-  
 
       onSelectChange: function (oEvent) {
         const oTable = oEvent.getSource(); // <Table>
@@ -760,19 +766,30 @@ sap.ui.define(
 
         const merge = function () {
           if (!aMov || !aTra) return;
-
           const oHash = {};
+    
+          const makeKey = (lpn, centro, deposito) =>
+            `${lpn}-${centro}-${deposito}`;
+
+          // 1. Indexa TRANSFERE
           aTra.forEach((t) => {
-            oHash[`${t.lpn}-${t.centro}`] = t;
+            oHash[makeKey(t.lpn, t.centro, t.deposito_origem)] = t;
           });
 
-            const aMerge = aMov.map((m) => {
-            const t = oHash[`${m.lpn}-${m.centro}`] || {};
+          // 2. Faz o merge registro a registro
+          const aMerge = aMov.map((m) => {
+            // procura TRANSFERE do mesmo LPN + Centro + Depósito
+            const t = oHash[makeKey(m.lpn, m.centro, m.deposito_origem)] || {};
 
             const nEst = Number(m.quantidade || 0);
             const nQual = Number(m.stck_qualid || m.StckQuant || 0);
             const nTotal = nEst + nQual;
             const sDU = nQual > 0 ? "BLOQ." : "LIB.";
+
+            if(m.lpn == "0000002842Q"){
+              console.log("Teste")
+              debugger;
+            }
 
             return Object.assign({}, m, {
               //deposito_origem: t.deposito_origem || m.deposito_origem,
@@ -780,10 +797,12 @@ sap.ui.define(
               //deposito_destino: t.deposito_destino || m.deposito_destino,
               //posicao_destino: t.posicao_destino || m.posicao_destino,
 
-              deposito_origem: t.deposito_origem   ?? m.deposito,
-              posicao_origem: t.posicao_origem     ?? m.posicao,
+              // deposito_origem: t.deposito_origem ?? m.deposito,
+              // posicao_origem: t.posicao_origem ?? m.posicao,
+              deposito_origem: m.deposito,
+              posicao_origem: m.posicao,
               deposito_destino: t.deposito_destino ?? "",
-              posicao_destino: t.posicao_destino   ?? "",
+              posicao_destino: t.posicao_destino ?? "",
 
               quantidade: nTotal,
               DU: sDU,
