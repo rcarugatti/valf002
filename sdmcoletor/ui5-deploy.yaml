@@ -15,7 +15,7 @@ builder:
       configuration:
         target:
           url: https://vhvmdwdqwd01.sap.valgroupco.com:44381/
-          client: '100'
+          client: 100
         app:
           name: ZUI5_SDMMVTO
           description: SDM COLETOR APP

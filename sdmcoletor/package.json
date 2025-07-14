@@ -11,8 +11,8 @@
   "main": "webapp/index.html",
   "devDependencies": {
     "@sap-ux/deploy-tooling": "^0.16.6",
-    "@sap-ux/ui5-middleware-fe-mockserver": "^2.2.96",
-    "@sap/ux-ui5-tooling": "1",
+    "@sap-ux/ui5-middleware-fe-mockserver": "^2.2.99",
+    "@sap/ux-ui5-tooling": "^1.18.2",
     "@ui5/cli": "^4.0.16",
     "cd..": "^0.0.0",
     "rimraf": "^5.0.5"
