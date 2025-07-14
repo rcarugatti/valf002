@@ -252,18 +252,88 @@ sap.ui.define(
 
         /* ───── Aplicar aos itens marcados ───── */
         const oTable = oView.byId("objectTable");
-        const aCtx =
-          oTable.getSelectedContexts("SelecionadosParaTransporte") || [];
+        const aCtx = oTable.getSelectedContexts() || [];
+
+        // Debug: verificar quantos itens foram selecionados
+        console.log(`📊 Contextos selecionados: ${aCtx.length}`);
+
+        if (aCtx.length === 0) {
+          sap.m.MessageToast.show("Nenhuma linha selecionada. Selecione as linhas que deseja aplicar o destino.");
+          return;
+        }
+
+        let iAplicados = 0;
+        let iErros = 0;
 
         aCtx.forEach(function (oCtx, i) {
-          const sPath = oCtx.getPath();
-          const oModel = oCtx.getModel();
+          try {
+            // Verificações de segurança
+            if (!oCtx) {
+              console.warn(`⚠️ Contexto ${i} é nulo`);
+              iErros++;
+              return;
+            }
 
-          oModel.setProperty(sPath + "/deposito_destino", sDepDestino);
-          oModel.setProperty(sPath + "/posicao_destino", sPosDestino);
+            const sPath = oCtx.getPath();
+            const oModel = oCtx.getModel();
+
+            if (!oModel) {
+              console.warn(`⚠️ Modelo não encontrado para contexto ${i}`);
+              iErros++;
+              return;
+            }
+
+            if (!sPath) {
+              console.warn(`⚠️ Path não encontrado para contexto ${i}`);
+              iErros++;
+              return;
+            }
+
+            // Verificar se o path existe no modelo
+            const oData = oModel.getProperty(sPath);
+            if (!oData) {
+              console.warn(`⚠️ Dados não encontrados no path ${sPath}`);
+              iErros++;
+              return;
+            }
+
+            // Aplicar os valores
+            oModel.setProperty(sPath + "/deposito_destino", sDepDestino);
+            oModel.setProperty(sPath + "/posicao_destino", sPosDestino);
+
+            // Verificar se foi aplicado corretamente
+            const sDepAplicado = oModel.getProperty(sPath + "/deposito_destino");
+            const sPosAplicada = oModel.getProperty(sPath + "/posicao_destino");
+
+            if (sDepAplicado === sDepDestino && sPosAplicada === sPosDestino) {
+              iAplicados++;
+              console.log(`✅ Aplicado com sucesso - Linha ${i}: ${sDepDestino}/${sPosDestino}`);
+            } else {
+              console.warn(`⚠️ Falha na aplicação - Linha ${i}: esperado ${sDepDestino}/${sPosDestino}, obtido ${sDepAplicado}/${sPosAplicada}`);
+              iErros++;
+            }
+
+          } catch (error) {
+            console.error(`❌ Erro ao processar contexto ${i}:`, error);
+            iErros++;
+          }
         });
 
-        sap.m.MessageToast.show("Destino aplicado às linhas selecionadas.");
+        // Forçar refresh do modelo para garantir que as mudanças sejam refletidas
+        const oSelecionadosModel = oView.getModel("SelecionadosParaTransporte");
+        if (oSelecionadosModel) {
+          oSelecionadosModel.refresh();
+        }
+
+        // Mensagem de resultado
+        if (iAplicados > 0) {
+          const sMsg = iErros > 0 
+            ? `Destino aplicado a ${iAplicados} linha(s). ${iErros} erro(s) encontrado(s).`
+            : `Destino aplicado a ${iAplicados} linha(s) selecionada(s).`;
+          sap.m.MessageToast.show(sMsg);
+        } else {
+          sap.m.MessageBox.error("Não foi possível aplicar o destino a nenhuma linha. Verifique o console para mais detalhes.");
+        }
         console.log("✅ Fim onAplicarButtonPress");
       },
 
@@ -293,19 +363,29 @@ sap.ui.define(
       onSalvarPress: function () {
         const oFuncModel = this.getOwnerComponent().getModel("MovimentaLpn");
         const oTable = this.byId("objectTable");
-        var modelAction = this.getView().getModel();
         var modelMaterialDocument = this.getView().getModel("materialDocumentModel");
         
+        // Estrutura API Documento Material
+        var materialDocumentWithItems = {
+          MaterialDocument: "",
+          GoodsMovementCode: "04",
+          to_MaterialDocumentItem: {
+            results: [],
+          },
+        };
+        
+        // Estrutura para chamada Atualizar CBOs
+        var updateCboPosicao = {
+          results: [],
+        };
+        
+        // Array para armazenar todos os itens que serão processados
+        var aItensProcessados = [];
+        
         const aCtx = oTable.getBinding("items").getContexts();
-        const fmtQty = (q) => String(Number(q).toFixed(3));
-        
         let iOK = 0, iSkip = 0;
-        
-        // Separar itens por tipo de operação
-        const aItemsTransferencia = []; // depósitos diferentes
-        const aItemsPosicao = []; // mesmo depósito, só posição
-        
-        // 1. Primeiro loop: classificar e validar todos os itens
+
+        // Primeiro, processa todos os contextos e coleta os dados
         for (const ctx of aCtx) {
           const oData = ctx.getObject();
 
@@ -315,7 +395,27 @@ sap.ui.define(
             return;
           }
 
-          const oItemData = {
+          const fmtQty = (q) => String(Number(q).toFixed(3));
+
+          // Se depósitos diferentes, adiciona ao documento material
+          if (oData.deposito_origem !== oData.deposito_destino && oData.flgFree !== "") {
+            materialDocumentWithItems.to_MaterialDocumentItem.results.push({
+              Material: oData.material,
+              Plant: oData.centro,
+              StorageLocation: oData.deposito_origem,
+              Batch: oData.lote_logistico,
+              GoodsMovementType: "311",
+              IssgOrRcvgMaterial: oData.material,
+              IssgOrRcvgBatch: oData.lote_logistico,
+              IssuingOrReceivingPlant: oData.centro,
+              IssuingOrReceivingStorageLoc: oData.deposito_destino,
+              EntryUnit: oData.unidade_medida,
+              QuantityInEntryUnit: fmtQty(oData.quantidade),
+            });
+          }
+
+          // Sempre adiciona aos CBOs para atualização de posição
+          updateCboPosicao.results.push({
             material: oData.material,
             lpn: oData.lpn,
             centro: oData.centro,
@@ -323,147 +423,188 @@ sap.ui.define(
             posicao_origem: oData.posicao_origem,
             deposito_destino: oData.deposito_destino,
             posicao_destino: oData.posicao_destino,
-            lote_logistico: oData.lote_logistico,
-            unidade_medida: oData.unidade_medida,
-            quantidade: oData.quantidade,
-            flgFree: oData.flgFree
-          };
+          });
 
-          if (oData.deposito_origem !== oData.deposito_destino && oData.flgFree !== "") {
-            aItemsTransferencia.push(oItemData);
-          } else {
-            aItemsPosicao.push(oItemData);
-          }
+          // Adiciona o item completo ao array de processados
+          aItensProcessados.push(oData);
+
           iOK++;
         }
 
-        // 2. Processar transferências (depósitos diferentes) - UMA única chamada
-        if (aItemsTransferencia.length > 0) {
-          const materialDocumentWithItems = {
-            MaterialDocument: "",
-            GoodsMovementCode: "04",
-            to_MaterialDocumentItem: {
-              results: aItemsTransferencia.map(item => ({
-                Material: item.material,
-                Plant: item.centro,
-                StorageLocation: item.deposito_origem,
-                Batch: item.lote_logistico,
-                GoodsMovementType: "311",
-                IssgOrRcvgMaterial: item.material,
-                IssgOrRcvgBatch: item.lote_logistico,
-                IssuingOrReceivingPlant: item.centro,
-                IssuingOrReceivingStorageLoc: item.deposito_destino,
-                EntryUnit: item.unidade_medida,
-                QuantityInEntryUnit: fmtQty(item.quantidade),
-              }))
-            },
-          };
+        // Mostrar busy indicator
+        sap.ui.core.BusyIndicator.show();
 
+        // Agora executa as operações de forma sequencial
+        this._processTransferOperations(
+          materialDocumentWithItems,
+          updateCboPosicao,
+          oFuncModel,
+          modelMaterialDocument,
+          iOK,
+          iSkip,
+          aItensProcessados
+        );
+      },
+
+      _processTransferOperations: function (
+        materialDocumentWithItems,
+        updateCboPosicao,
+        oFuncModel,
+        modelMaterialDocument,
+        iOK,
+        iSkip,
+        aItensProcessados
+      ) {
+        // Se há itens para transferência entre depósitos diferentes
+        if (materialDocumentWithItems.to_MaterialDocumentItem.results.length > 0) {
           modelMaterialDocument.create("/A_MaterialDocumentHeader", materialDocumentWithItems, {
             success: function (odata, response) {
-              // Após criar documento material, atualizar posições
-              this._updatePositions(oFuncModel, aItemsTransferencia, modelAction)
-                .then(() => {
-                  this._showSuccessMessage();
-                })
-                .catch((error) => {
-                  this._showErrorMessage("Erro na atualização das posições após transferência", error);
-                });
+              // Após criar o documento, processa as transferências de posição
+              this._processLpnTransfers(updateCboPosicao, oFuncModel, iOK, iSkip, aItensProcessados);
             }.bind(this),
             error: function (error, response) {
-              this._showErrorMessage("Erro na criação do documento material", error);
+              sap.ui.core.BusyIndicator.hide();
+              var errorMessage = "Erro ao criar documento material";
+              try {
+                errorMessage = JSON.parse(error.responseText).error.innererror.errordetails[0].message;
+              } catch (e) {
+                console.error("Erro ao processar resposta de erro:", e);
+              }
+              sap.m.MessageBox.error(errorMessage);
             }.bind(this),
           });
-        }
-
-        // 3. Processar apenas mudanças de posição (mesmo depósito)
-        if (aItemsPosicao.length > 0) {
-          this._updatePositions(oFuncModel, aItemsPosicao, modelAction)
-            .then(() => {
-              if (aItemsTransferencia.length === 0) {
-                this._showSuccessMessage();
-              }
-            })
-            .catch((error) => {
-              this._showErrorMessage("Erro na atualização das posições", error);
-            });
-        }
-
-        // 4. Mostrar mensagem se não houver itens processados
-        if (aItemsTransferencia.length === 0 && aItemsPosicao.length === 0) {
-          const sMsg = iOK === 0
-            ? "Nenhuma LPN com depósito destino preenchido para processar."
-            : `Processadas ${iOK} LPN(s).` + (iSkip ? ` ${iSkip} ignorada(s) sem depósito destino.` : "");
-          sap.m.MessageToast.show(sMsg);
+        } else {
+          // Se não há transferências entre depósitos, apenas processa posições
+          this._processLpnTransfers(updateCboPosicao, oFuncModel, iOK, iSkip, aItensProcessados);
         }
       },
 
-      _updatePositions: function (oFuncModel, aItems, modelAction) {
-        return new Promise((resolve, reject) => {
-          let iProcessed = 0;
-          let iErrors = 0;
-          const iTotal = aItems.length;
+      _processLpnTransfers: function (updateCboPosicao, oFuncModel, iOK, iSkip, aItensProcessados) {
+        if (updateCboPosicao.results.length === 0) {
+          this._showFinalMessage(iOK, iSkip, []);
+          return;
+        }
 
-          if (iTotal === 0) {
-            resolve();
-            return;
-          }
+        let processedCount = 0;
+        let successCount = 0;
+        const totalCount = updateCboPosicao.results.length;
+        const aItensComSucesso = [];
 
-          aItems.forEach((item) => {
-            oFuncModel.callFunction("/transferir_lpn", {
-              method: "POST",
-              groupId: "transferirLpn",
-              urlParameters: {
-                material: item.material,
-                lpn: item.lpn,
-                centro: item.centro,
-                deposito_origem: item.deposito_origem,
-                posicao_origem: item.posicao_origem,
-                deposito_destino: item.deposito_destino,
-                posicao_destino: item.posicao_destino,
-              },
-              success: () => {
-                iProcessed++;
-                if (iProcessed + iErrors === iTotal) {
-                  if (iErrors === 0) {
-                    resolve();
-                  } else {
-                    reject(new Error(`${iErrors} erros de ${iTotal} itens processados`));
-                  }
-                }
-              },
-              error: (oError) => {
-                iErrors++;
-                console.error(`Erro ao transferir LPN ${item.lpn}:`, oError);
-                if (iProcessed + iErrors === iTotal) {
-                  reject(new Error(`${iErrors} erros de ${iTotal} itens processados`));
-                }
-              },
-            });
+        updateCboPosicao.results.forEach((element, index) => {
+          oFuncModel.callFunction("/transferir_lpn", {
+            method: "POST",
+            groupId: "transferirLpn",
+            urlParameters: {
+              material: element.material,
+              lpn: element.lpn,
+              centro: element.centro,
+              deposito_origem: element.deposito_origem,
+              posicao_origem: element.posicao_origem,
+              deposito_destino: element.deposito_destino,
+              posicao_destino: element.posicao_destino,
+            },
+            success: function (oData, response) {
+              processedCount++;
+              successCount++;
+              console.log(`LPN ${element.lpn} processada com sucesso (${processedCount}/${totalCount})`);
+              
+              // Adiciona o item processado com sucesso ao array
+              aItensComSucesso.push(aItensProcessados[index]);
+              
+              // Se todas as transferências foram processadas
+              if (processedCount === totalCount) {
+                this._onAllTransfersComplete(iOK, iSkip, aItensComSucesso, successCount);
+              }
+            }.bind(this),
+            error: function (oError) {
+              processedCount++;
+              console.error(`Erro ao processar LPN ${element.lpn}:`, oError);
+              sap.m.MessageToast.show(`Erro ao processar LPN ${element.lpn}`);
+              
+              // Mesmo com erro, verifica se todas foram processadas
+              if (processedCount === totalCount) {
+                this._onAllTransfersComplete(iOK, iSkip, aItensComSucesso, successCount);
+              }
+            }.bind(this),
           });
         });
       },
 
-      _showSuccessMessage: function () {
+      _onAllTransfersComplete: function (iOK, iSkip, aItensComSucesso, successCount) {
         sap.ui.core.BusyIndicator.hide();
-        this.getView().setBusy(false);
         
+        // Força refresh do modelo
         this.getOwnerComponent().getModel("MovLpn").refresh(true);
         
-        sap.m.MessageBox.success("Operação realizada com sucesso!", {
-          onClose: () => {
-            sap.ui.getCore().getEventBus().publish("Worklist", "Refresh");
+        // Cria modelo com os itens processados com sucesso para enviar à Worklist
+        const oItensProcessadosModel = new sap.ui.model.json.JSONModel({
+          itensProcessados: aItensComSucesso,
+          totalProcessados: successCount,
+          timestamp: new Date()
+        });
+        
+        // Armazena no Core para a Worklist acessar
+        sap.ui.getCore().setModel(oItensProcessadosModel, "ItensProcessadosComSucesso");
+        
+        // Mensagem de sucesso com informações detalhadas
+        const sMsgSucesso = successCount === iOK 
+          ? `Todas as ${successCount} transferências processadas com sucesso!`
+          : `${successCount} de ${iOK} transferências processadas com sucesso.`;
+        
+        // Mostra mensagem de sucesso e navega de volta
+        sap.m.MessageBox.success(sMsgSucesso, {
+          onClose: function () {
+            // Dispara evento para refresh da Worklist com os itens processados
+            sap.ui.getCore().getEventBus().publish("Worklist", "RefreshWithProcessedItems", {
+              itensProcessados: aItensComSucesso,
+              totalProcessados: successCount,
+              timestamp: new Date()
+            });
+            
+            // Limpa o modelo SelecionadosParaTransporte dos itens processados com sucesso
+            this._removeProcessedItemsFromSelection(aItensComSucesso);
+            
+            // Navega de volta
             this.onNavBack();
-          }
+          }.bind(this),
         });
       },
 
-      _showErrorMessage: function (sMessage, error) {
-        sap.ui.core.BusyIndicator.hide();
-        this.getView().setBusy(false);
+      /**
+       * Remove os itens processados com sucesso do modelo SelecionadosParaTransporte
+       */
+      _removeProcessedItemsFromSelection: function (aItensComSucesso) {
+        const oSelecionadosModel = sap.ui.getCore().getModel("SelecionadosParaTransporte");
+        if (!oSelecionadosModel || !aItensComSucesso.length) {
+          return;
+        }
+
+        const aSelecionados = oSelecionadosModel.getData();
+        const aLpnsProcessadas = aItensComSucesso.map(item => item.lpn);
         
-        console.error(sMessage, error);
-        sap.m.MessageBox.error(sMessage);
+        // Filtra removendo os itens processados com sucesso
+        const aFiltrados = aSelecionados.filter(item => !aLpnsProcessadas.includes(item.lpn));
+        
+        oSelecionadosModel.setData(aFiltrados);
+        
+        console.log(`📋 Removidos ${aLpnsProcessadas.length} itens processados com sucesso do modelo SelecionadosParaTransporte`);
+      },
+
+      _showFinalMessage: function (iOK, iSkip, aItensComSucesso) {
+        sap.ui.core.BusyIndicator.hide();
+        
+        const sMsg =
+          iOK === 0
+            ? "Nenhuma LPN com depósito destino preenchido para processar."
+            : `Processadas ${iOK} LPN(s).` +
+              (iSkip ? ` ${iSkip} ignorada(s) sem depósito destino.` : "");
+
+        sap.m.MessageToast.show(sMsg);
+        
+        // Se houver itens processados com sucesso, remove do modelo
+        if (aItensComSucesso && aItensComSucesso.length > 0) {
+          this._removeProcessedItemsFromSelection(aItensComSucesso);
+        }
       },
 
       onSelectChange: function (oEvent) {

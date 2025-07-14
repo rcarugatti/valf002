@@ -76,6 +76,8 @@ sap.ui.define(
       onInit: function () {
         this.byId("page").addStyleClass("zoom70");
         var oViewModel;
+        
+        // Subscreve ao evento básico de refresh
         sap.ui
           .getCore()
           .getEventBus()
@@ -87,6 +89,28 @@ sap.ui.define(
               this.getOwnerComponent().getModel("MovLpn").refresh(true);
               const oTbl = this.byId("table");
               oTbl?.getBinding("items")?.refresh(); // se preciso
+            }.bind(this)
+          );
+
+        // Subscreve ao evento de refresh com itens processados
+        sap.ui
+          .getCore()
+          .getEventBus()
+          .subscribe(
+            "Worklist", // canal
+            "RefreshWithProcessedItems", // evento
+            function (sChannelId, sEventId, oData) {
+              console.log("📥 Recebido evento RefreshWithProcessedItems:", oData);
+              
+              // Refresh dos modelos
+              this.getOwnerComponent().getModel("MovLpn").refresh(true);
+              const oTbl = this.byId("table");
+              oTbl?.getBinding("items")?.refresh();
+              
+              // Processa os itens que foram transferidos com sucesso
+              if (oData && oData.itensProcessados && oData.itensProcessados.length > 0) {
+                this._processSuccessfulItems(oData.itensProcessados, oData.totalProcessados);
+              }
             }.bind(this)
           );
         // debugger;
@@ -727,6 +751,74 @@ sap.ui.define(
             "/tableNoDataText",
             this.getResourceBundle().getText("worklistNoDataWithSearchText")
           );
+        }
+      },
+
+      /**
+       * Processa os itens que foram transferidos com sucesso na Object view
+       * @param {Array} aItensProcessados - Array com os itens processados com sucesso
+       * @param {number} iTotalProcessados - Número total de itens processados
+       */
+      _processSuccessfulItems: function (aItensProcessados, iTotalProcessados) {
+        console.log(`🎯 Processando ${iTotalProcessados} itens transferidos com sucesso`);
+        
+        // Aguarda um pouco para garantir que o refresh dos dados foi concluído
+        setTimeout(function() {
+          // Obtém o modelo atual da tabela
+          const oTable = this.byId("table");
+          const oRawModel = this.getView().getModel("rawModel");
+          
+          if (!oRawModel) {
+            console.warn("⚠️ Modelo rawModel não encontrado para atualização");
+            return;
+          }
+
+          const aCurrentData = oRawModel.getData() || [];
+          const aLpnsProcessadas = aItensProcessados.map(item => item.lpn);
+          
+          // Remove os itens processados com sucesso da lista atual
+          const aFilteredData = aCurrentData.filter(item => !aLpnsProcessadas.includes(item.lpn));
+          
+          // Atualiza o modelo
+          oRawModel.setData(aFilteredData);
+          
+          // Atualiza contadores se existirem
+          this._updateTableTitle();
+          
+          // Mostra feedback visual dos itens removidos
+          const sMessage = iTotalProcessados === 1 
+            ? `1 item removido da lista após transferência com sucesso`
+            : `${iTotalProcessados} itens removidos da lista após transferências com sucesso`;
+          
+          sap.m.MessageToast.show(sMessage);
+          
+          console.log(`✅ ${iTotalProcessados} itens removidos da Worklist após processamento com sucesso`);
+          
+        }.bind(this), 500); // Aguarda 500ms para garantir que o refresh foi concluído
+      },
+
+      /**
+       * Atualiza o título da tabela com a contagem atual
+       */
+      _updateTableTitle: function () {
+        const oTable = this.byId("table");
+        const oBinding = oTable.getBinding("items");
+        
+        if (oBinding) {
+          const iLength = oBinding.getLength() || 0;
+          const oViewModel = this.getModel("worklistView");
+          
+          if (oViewModel) {
+            let sTitle;
+            if (iLength && this.getResourceBundle().getText) {
+              sTitle = this.getResourceBundle().getText("worklistTableTitleCount", [iLength]);
+            } else {
+              sTitle = this.getResourceBundle().getText ? 
+                this.getResourceBundle().getText("worklistTableTitle") : 
+                "Lista de LPNs";
+            }
+            oViewModel.setProperty("/worklistTableTitle", sTitle);
+          }
         }
       },
     });
