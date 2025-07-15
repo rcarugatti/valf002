@@ -15,11 +15,13 @@ builder:
       configuration:
         target:
           url: https://vhvmdwdqwd01.sap.valgroupco.com:44381/
-          client: 100
+          user: "rcarugatti"
+          password: "S@pMAI2025&Villa-@malia"
+          client: "100"
         app:
           name: ZUI5_SDMMVTO
           description: SDM COLETOR APP
           package: ZSDM_MMWY
-          transport: S4DK944439
+          transport: S4DK945251
         exclude:
           - /test/

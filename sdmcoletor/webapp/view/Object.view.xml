@@ -165,7 +165,7 @@
                                     change=".onChangeposicaoDestino">
                                 <core:Item id="tplPosDestino" key="{PosDestinoConcatFull>POSICAO}" text="{PosDestinoConcatFull>TEXTO}" />
                             </ComboBox>
-                            <Text id="idTx21"  text="{SelecionadosParaTransporte>material}" width="2.5rem"/>
+                           <!-- <Text id="idTx21"  text="{SelecionadosParaTransporte>material}" width="2.5rem"/>   -->
                         </cells>
                     </ColumnListItem>
                 </items>

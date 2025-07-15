@@ -764,37 +764,66 @@ sap.ui.define(
         
         // Aguarda um pouco para garantir que o refresh dos dados foi concluído
         setTimeout(function() {
-          // Obtém o modelo atual da tabela
-          const oTable = this.byId("table");
-          const oRawModel = this.getView().getModel("rawModel");
+          // Recarrega os dados atualizados do servidor
+          this._loadMergedData();
           
-          if (!oRawModel) {
-            console.warn("⚠️ Modelo rawModel não encontrado para atualização");
-            return;
-          }
-
-          const aCurrentData = oRawModel.getData() || [];
-          const aLpnsProcessadas = aItensProcessados.map(item => item.lpn);
-          
-          // Remove os itens processados com sucesso da lista atual
-          const aFilteredData = aCurrentData.filter(item => !aLpnsProcessadas.includes(item.lpn));
-          
-          // Atualiza o modelo
-          oRawModel.setData(aFilteredData);
-          
-          // Atualiza contadores se existirem
-          this._updateTableTitle();
-          
-          // Mostra feedback visual dos itens removidos
-          const sMessage = iTotalProcessados === 1 
-            ? `1 item removido da lista após transferência com sucesso`
-            : `${iTotalProcessados} itens removidos da lista após transferências com sucesso`;
-          
-          sap.m.MessageToast.show(sMessage);
-          
-          console.log(`✅ ${iTotalProcessados} itens removidos da Worklist após processamento com sucesso`);
+          // Aguarda o carregamento dos dados e então restaura a seleção
+          setTimeout(function() {
+            this._restoreProcessedItemsWithUpdatedData(aItensProcessados, iTotalProcessados);
+          }.bind(this), 1000); // Aguarda 1s para garantir que os dados foram carregados
           
         }.bind(this), 500); // Aguarda 500ms para garantir que o refresh foi concluído
+      },
+
+      /**
+       * Restaura os itens processados na lista com os dados atualizados (novos depósitos/posições)
+       * @param {Array} aItensProcessados - Array com os itens processados
+       * @param {number} iTotalProcessados - Número total de itens processados
+       */
+      _restoreProcessedItemsWithUpdatedData: function (aItensProcessados, iTotalProcessados) {
+        const oTable = this.byId("table");
+        const oRawModel = this.getView().getModel("rawModel");
+        
+        if (!oRawModel) {
+          console.warn("⚠️ Modelo rawModel não encontrado para atualização");
+          return;
+        }
+
+        const aCurrentData = oRawModel.getData() || [];
+        const aLpnsProcessadas = aItensProcessados.map(item => item.lpn);
+        
+        // Filtra apenas os itens que foram processados para exibir na Worklist
+        const aItensAtualizados = aCurrentData.filter(item => aLpnsProcessadas.includes(item.lpn));
+        
+        // Atualiza o modelo com apenas os itens processados (agora com novos depósitos/posições)
+        oRawModel.setData(aItensAtualizados);
+        
+        // Limpa filtros para mostrar todos os itens processados
+        const oBinding = oTable.getBinding("items");
+        if (oBinding) {
+          oBinding.filter([]);
+        }
+        
+        // Atualiza contadores
+        this._updateTableTitle();
+        
+        // Mostra feedback visual dos itens atualizados
+        const sMessage = iTotalProcessados === 1 
+          ? `1 item atualizado com novos depósito/posição após transferência.`
+          : `${iTotalProcessados} itens atualizados com novos depósitos/posições após transferências.`;
+        
+        sap.m.MessageToast.show(sMessage);
+        
+        console.log(`✅ ${iTotalProcessados} itens atualizados na Worklist com novos depósitos/posições`);
+        console.log("📋 Itens exibidos:", aItensAtualizados.map(item => `${item.lpn} - ${item.deposito_origem}/${item.posicao_origem}`));
+      },
+
+      /**
+       * Limpa todos os campos de busca e filtros (método mantido para compatibilidade)
+       */
+      _clearSearchFields: function () {
+        // Método mantido mas não executa limpeza para preservar estado da busca
+        console.log("🔄 Preservando campos de busca após processamento");
       },
 
       /**
