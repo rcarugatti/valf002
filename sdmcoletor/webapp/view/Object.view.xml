@@ -115,27 +115,27 @@
                 growingScrollToLoad="true"
                 updateFinished=".onUpdateFinished">
                 <columns>
-                    <Column id="nameColumnObj">
-                        <Text text="{i18n>tableNameColumnTitle}" id="nameColumnTitleObj"/>
+                    <Column id="nameColumnObj" width="3.0rem" >
+                        <Text text="{i18n>tableNameColumnTitle}" textAlign="Left" id="nameColumnTitleObj"/>
                     </Column>
-                    <Column id="depositoOrigemColumnObj">
-                        <Text text="{i18n>depositOrigemLabel}" id="depositoOrigemColumnTitleObj"/>
+                    <Column id="depositoOrigemColumnObj" width="3.0rem">
+                        <Text text="{i18n>depositOrigemLabel}" textAlign="Left" id="depositoOrigemColumnTitleObj"/>
                     </Column>
-                    <Column id="posicaoOrigemColumnObj">
-                        <Text text="{i18n>posOrigLabel}" id="posicaoOrigemColumnTitleObj"/>
+                    <Column id="posicaoOrigemColumnObj" width="3.0rem">
+                        <Text text="{i18n>posOrigLabel}" textAlign="Left" id="posicaoOrigemColumnTitleObj"/>
                     </Column>
-                    <Column id="loteSDMColumnObj">
-                        <Text text="{i18n>lSDMLabel}" id="loteSDMColumnTitleObj"/>
+                    <Column id="loteSDMColumnObj" width="3.0rem">
+                        <Text text="{i18n>lSDMLabel}" textAlign="Left" id="loteSDMColumnTitleObj"/>
                     </Column>
-                    <Column id="depositoDestinoColumnObj">
-                        <Text text="{i18n>depositoDestinoLabel}" id="depositoDestinoColumnTitleObj"/>
+                    <Column id="depositoDestinoColumnObj" width="6.7rem">
+                        <Text text="{i18n>depositoDestinoLabel}" textAlign="Left" id="depositoDestinoColumnTitleObj"/>
                     </Column>
-                    <Column id="posicaoDestinoColumnObj">
-                        <Text text="{i18n>posDstLabel}" id="posicaoDestinoColumnTitleObj"/>
+                    <Column id="posicaoDestinoColumnObj" width="6.7rem">
+                        <Text text="{i18n>posDstLabel}" textAlign="Left" id="posicaoDestinoColumnTitleObj"/>
                     </Column>
-                    <Column id="materialColumnObj">
+           <!--         <Column id="materialColumnObj">
                         <Text text="{i18n>materialLabel}" id="materialColumnTitleObj"/>
-                    </Column>
+                    </Column>  -->
                 </columns>
                 <items>
                     <ColumnListItem  id="idCl1" 
@@ -143,16 +143,16 @@
                         press=".onPresst" 
                          highlight="{= ${SelecionadosParaTransporte>DU} === 'BLOQ.' ? 'Error' : ${SelecionadosParaTransporte>DU} === 'LIB.' ? 'Success' : 'None'}">
                         <cells>
-                            <Text id="idTxx2"  text="{SelecionadosParaTransporte>lpn}"/>
-                            <Text id="idTxx3"  text="{SelecionadosParaTransporte>deposito_origem}" width="1.0rem"/>
-                            <Text id="idTxx1"  text="{SelecionadosParaTransporte>posicao_origem}"  width="2rem"/>
+                            <Text id="idTxx2"  text="{SelecionadosParaTransporte>lpn}"             width="3.0rem"/>
+                            <Text id="idTxx3"  text="{SelecionadosParaTransporte>deposito_origem}" width="3.0rem"/>
+                            <Text id="idTxx1"  text="{SelecionadosParaTransporte>posicao_origem}"  width="3rem"/>
                             <Text id="idTxx4"  text="{SelecionadosParaTransporte>lote_sdm}"        width="3rem"/>
                             <ComboBox
                                     id="idSelectDepDestino"
                                     items="{DepDestinoConcat>/}"
                                     selectedKey="{SelecionadosParaTransporte>deposito_destino}"
                                     placeholder="-"
-                                    width="11rem"
+                                    width="6.7rem"
                                     change=".onChangeDepositoDestino">
                                 <core:Item id="tplDepDestino" key="{DepDestinoConcat>DEPOSITO}" text="{DepDestinoConcat>TEXTO}" />
                             </ComboBox>
@@ -161,7 +161,7 @@
                                     items="{PosDestinoConcatFull>/}"
                                     selectedKey="{SelecionadosParaTransporte>posicao_destino}"
                                     placeholder="-"
-                                    width="11rem"
+                                    width="6.7rem"
                                     change=".onChangeposicaoDestino">
                                 <core:Item id="tplPosDestino" key="{PosDestinoConcatFull>POSICAO}" text="{PosDestinoConcatFull>TEXTO}" />
                             </ComboBox>

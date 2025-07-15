@@ -268,7 +268,7 @@
                                         : 'None' }"/>
                             <Text id="idTextDepoOri" text=               "{rawModel>deposito_origem}"/>
                             <Text id="idTextPosiOri" text=               "{rawModel>posicao_origem}"/>
-                            <!--    <Text text=               "{quant}"/> -->
+                            <!--    <Text text=               "{quant}"/> --> 
                             <Text id="idTextQuantidade" text="{= (+${rawModel>quantidade} || 0) + (+${rawModel>StckQuant} || 0) }"/>
                             <Text id="idTexLoteSDM" text=               "{rawModel>lote_sdm}"/>
                         </cells>
