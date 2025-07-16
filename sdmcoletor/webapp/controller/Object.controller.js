@@ -264,6 +264,7 @@ sap.ui.define(
 
         let iAplicados = 0;
         let iErros = 0;
+        const aTodasOpcoes = oView.getModel("PosDestinoConcatFull").getData();
 
         aCtx.forEach(function (oCtx, i) {
           try {
@@ -295,6 +296,18 @@ sap.ui.define(
               console.warn(`⚠️ Dados não encontrados no path ${sPath}`);
               iErros++;
               return;
+            }
+
+            // Encontrar e atualizar o ComboBox de posição antes de aplicar o valor
+            const aItems = oTable.getItems();
+            const oItem = aItems.find(item => item.getBindingContext("SelecionadosParaTransporte")?.getPath() === sPath);
+            if (oItem) {
+              const oSelectPos = oItem.getCells().find(cell => cell.getId().includes("idSelectPosDest"));
+              if (oSelectPos) {
+                const aFiltradas = aTodasOpcoes.filter(item => item.DEPOSITO === sDepDestino);
+                oSelectPos.setModel(new JSONModel(aFiltradas));
+                oSelectPos.bindItems("/", new sap.ui.core.Item({ key: "{POSICAO}", text: "{TEXTO}" }));
+              }
             }
 
             // Aplicar os valores
@@ -558,11 +571,12 @@ sap.ui.define(
             sap.ui.getCore().getEventBus().publish("Worklist", "RefreshWithProcessedItems", {
               itensProcessados: aItensComSucesso,
               totalProcessados: successCount,
-              timestamp: new Date()
+              timestamp: new Date(),
+              manterSelecionados: true // Flag para manter itens selecionados
             });
             
-            // Limpa o modelo SelecionadosParaTransporte dos itens processados com sucesso
-            this._removeProcessedItemsFromSelection(aItensComSucesso);
+            // NÃO remove os itens do modelo SelecionadosParaTransporte
+            // Eles devem permanecer para serem exibidos na Worklist atualizados
             
             // Navega de volta
             this.onNavBack();

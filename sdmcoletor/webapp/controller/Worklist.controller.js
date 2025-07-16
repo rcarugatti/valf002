@@ -770,6 +770,10 @@ sap.ui.define(
           // Aguarda o carregamento dos dados e então restaura a seleção
           setTimeout(function() {
             this._restoreProcessedItemsWithUpdatedData(aItensProcessados, iTotalProcessados);
+            
+            // Atualiza o modelo SelecionadosParaTransporte com os dados atualizados
+            this._updateSelecionadosModelWithRefreshedData(aItensProcessados);
+            
           }.bind(this), 1000); // Aguarda 1s para garantir que os dados foram carregados
           
         }.bind(this), 500); // Aguarda 500ms para garantir que o refresh foi concluído
@@ -816,6 +820,31 @@ sap.ui.define(
         
         console.log(`✅ ${iTotalProcessados} itens atualizados na Worklist com novos depósitos/posições`);
         console.log("📋 Itens exibidos:", aItensAtualizados.map(item => `${item.lpn} - ${item.deposito_origem}/${item.posicao_origem}`));
+      },
+
+      /**
+       * Atualiza o modelo SelecionadosParaTransporte com dados atualizados do servidor
+       * @param {Array} aItensProcessados - Array com os itens processados (dados antigos)
+       */
+      _updateSelecionadosModelWithRefreshedData: function (aItensProcessados) {
+        const oRawModel = this.getView().getModel("rawModel");
+        if (!oRawModel) {
+          console.warn("⚠️ Modelo rawModel não encontrado para atualizar SelecionadosParaTransporte");
+          return;
+        }
+
+        const aCurrentData = oRawModel.getData() || [];
+        const aLpnsProcessadas = aItensProcessados.map(item => item.lpn);
+        
+        // Busca os dados atualizados dos itens processados
+        const aItensAtualizados = aCurrentData.filter(item => aLpnsProcessadas.includes(item.lpn));
+        
+        // Atualiza o modelo global SelecionadosParaTransporte com os dados atualizados
+        const oSelecionadosModel = new sap.ui.model.json.JSONModel(aItensAtualizados);
+        sap.ui.getCore().setModel(oSelecionadosModel, "SelecionadosParaTransporte");
+        
+        console.log(`🔄 Modelo SelecionadosParaTransporte atualizado com ${aItensAtualizados.length} itens processados`);
+        console.log("📋 Dados atualizados:", aItensAtualizados.map(item => `${item.lpn}: ${item.deposito_origem}/${item.posicao_origem}`));
       },
 
       /**

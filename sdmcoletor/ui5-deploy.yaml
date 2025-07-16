@@ -15,9 +15,11 @@ builder:
       configuration:
         target:
           url: https://vhvmdwdqwd01.sap.valgroupco.com:44381/
-          user: "rcarugatti"
-          password: "S@pMAI2025&Villa-@malia"
-          client: "100"
+          client: 100                                         # ← era string; pode ficar número
+          auth: basic                                         # ← novo (exigido)
+        credentials:                                          # ← novo bloco
+          username: env:SAP_USER
+          password: env:SAP_PASSWORD
         app:
           name: ZUI5_SDMMVTO
           description: SDM COLETOR APP
