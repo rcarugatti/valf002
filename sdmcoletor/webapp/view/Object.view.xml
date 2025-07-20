@@ -43,11 +43,14 @@
                             </Select>   -->
                             <ComboBox
                                 id="idSelectHeaderDepDestino"
-                                width="5rem"
+                                width="6.7rem"
+                                required="true"
                                  selectedKey="{/depositoSelecionado}"
                                 change=".onChangeDepoDestHeader"
                                 placeholder="Todos"  
                                items="{DepDestinoConcat>/}">
+                                <!-- Item vazio para forçar placeholder -->
+                                <core:Item key="" text="" />
                                 <core:Item  id="idCr31"  key="{DepDestinoConcat>DEPOSITO}" text="{DepDestinoConcat>TEXTO}" />
                             </ComboBox>
                         </VBox>
@@ -62,7 +65,7 @@
                             </Select> -->
                             <ComboBox
                                 id="idSelectPosDestino"
-                                width="5rem"
+                                width="6.7rem"
                                 items="{PosDestinoConcat>/}"                                
                                 selectedKey="{/depositoSelecionado}"
                                 change=".onChangePosiDestHeader"
@@ -171,13 +174,5 @@
                 </items>
             </Table>
         </semantic:content>
-        <!--      <semantic:sendEmailAction>  RVC
-            <semantic:SendEmailAction id="shareEmail" press=".onShareEmailPress"/>
-        </semantic:sendEmailAction>
-         Custom Footer Content
-        <semantic:footerCustomActions>
-            <Button text="Save" press=".onSalvarPress" type="Emphasized" icon="sap-icon://save" />
-            <Button text="Cancel" press=".onNavBack" />
-        </semantic:footerCustomActions>  -->
-    </semantic:SemanticPage>
+   </semantic:SemanticPage>
 </mvc:View>

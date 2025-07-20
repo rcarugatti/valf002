@@ -76,7 +76,7 @@ sap.ui.define(
       onInit: function () {
         this.byId("page").addStyleClass("zoom70");
         var oViewModel;
-        
+
         // Subscreve ao evento básico de refresh
         sap.ui
           .getCore()
@@ -100,16 +100,26 @@ sap.ui.define(
             "Worklist", // canal
             "RefreshWithProcessedItems", // evento
             function (sChannelId, sEventId, oData) {
-              console.log("📥 Recebido evento RefreshWithProcessedItems:", oData);
-              
+              console.log(
+                "📥 Recebido evento RefreshWithProcessedItems:",
+                oData
+              );
+
               // Refresh dos modelos
               this.getOwnerComponent().getModel("MovLpn").refresh(true);
               const oTbl = this.byId("table");
               oTbl?.getBinding("items")?.refresh();
-              
+
               // Processa os itens que foram transferidos com sucesso
-              if (oData && oData.itensProcessados && oData.itensProcessados.length > 0) {
-                this._processSuccessfulItems(oData.itensProcessados, oData.totalProcessados);
+              if (
+                oData &&
+                oData.itensProcessados &&
+                oData.itensProcessados.length > 0
+              ) {
+                this._processSuccessfulItems(
+                  oData.itensProcessados,
+                  oData.totalProcessados
+                );
               }
             }.bind(this)
           );
@@ -309,8 +319,25 @@ sap.ui.define(
        * @public
        */
       onNavBack: function () {
-        // eslint-disable-next-line sap-no-history-manipulation
-        history.go(-1);
+        var sPreviousHash = History.getInstance().getPreviousHash();
+        // Limpa o modelo SelecionadosParaTransporte ao voltar
+        sap.ui
+          .getCore()
+          .setModel(
+            new sap.ui.model.json.JSONModel([]),
+            "SelecionadosParaTransporte"
+          );
+        // Limpa o modelo rawModel (zera a tabela)
+        var oView = this.getView();
+        var oRawModel = oView.getModel("rawModel");
+        if (oRawModel) {
+          oRawModel.setData([]);
+        }
+        if (sPreviousHash !== undefined) {
+          history.go(-1);
+        } else {
+          this.getRouter().navTo("worklist", {}, undefined, true);
+        }
       },
       onSelectCheckBox: function (oEvent) {
         var oCheckBox = oEvent.getSource();
@@ -670,7 +697,7 @@ sap.ui.define(
         const merge = function () {
           if (!aMov || !aTra) return;
           const oHash = {};
-    
+
           const makeKey = (lpn, centro, deposito) =>
             `${lpn}-${centro}-${deposito}`;
 
@@ -689,10 +716,10 @@ sap.ui.define(
             const nTotal = nEst + nQual;
             const sDU = nQual > 0 ? "BLOQ." : "LIB.";
 
-            if(m.lpn == "0000002842Q"){
-              console.log("Teste")
-              debugger;
-            }
+            // if(m.lpn == "0000002842Q"){
+            //   console.log("Teste")
+            //   //debugger;
+            // }
 
             return Object.assign({}, m, {
               //deposito_origem: t.deposito_origem || m.deposito_origem,
@@ -760,23 +787,34 @@ sap.ui.define(
        * @param {number} iTotalProcessados - Número total de itens processados
        */
       _processSuccessfulItems: function (aItensProcessados, iTotalProcessados) {
-        console.log(`🎯 Processando ${iTotalProcessados} itens transferidos com sucesso`);
-        
+        console.log(
+          `🎯 Processando ${iTotalProcessados} itens transferidos com sucesso`
+        );
+
         // Aguarda um pouco para garantir que o refresh dos dados foi concluído
-        setTimeout(function() {
-          // Recarrega os dados atualizados do servidor
-          this._loadMergedData();
-          
-          // Aguarda o carregamento dos dados e então restaura a seleção
-          setTimeout(function() {
-            this._restoreProcessedItemsWithUpdatedData(aItensProcessados, iTotalProcessados);
-            
-            // Atualiza o modelo SelecionadosParaTransporte com os dados atualizados
-            this._updateSelecionadosModelWithRefreshedData(aItensProcessados);
-            
-          }.bind(this), 1000); // Aguarda 1s para garantir que os dados foram carregados
-          
-        }.bind(this), 500); // Aguarda 500ms para garantir que o refresh foi concluído
+        setTimeout(
+          function () {
+            // Recarrega os dados atualizados do servidor
+            this._loadMergedData();
+
+            // Aguarda o carregamento dos dados e então restaura a seleção
+            setTimeout(
+              function () {
+                this._restoreProcessedItemsWithUpdatedData(
+                  aItensProcessados,
+                  iTotalProcessados
+                );
+
+                // Atualiza o modelo SelecionadosParaTransporte com os dados atualizados
+                this._updateSelecionadosModelWithRefreshedData(
+                  aItensProcessados
+                );
+              }.bind(this),
+              1000
+            ); // Aguarda 1s para garantir que os dados foram carregados
+          }.bind(this),
+          500
+        ); // Aguarda 500ms para garantir que o refresh foi concluído
       },
 
       /**
@@ -784,42 +822,80 @@ sap.ui.define(
        * @param {Array} aItensProcessados - Array com os itens processados
        * @param {number} iTotalProcessados - Número total de itens processados
        */
-      _restoreProcessedItemsWithUpdatedData: function (aItensProcessados, iTotalProcessados) {
+      _restoreProcessedItemsWithUpdatedData: function (
+        aItensProcessados,
+        iTotalProcessados
+      ) {
         const oTable = this.byId("table");
         const oRawModel = this.getView().getModel("rawModel");
-        
+
         if (!oRawModel) {
           console.warn("⚠️ Modelo rawModel não encontrado para atualização");
           return;
         }
 
         const aCurrentData = oRawModel.getData() || [];
-        const aLpnsProcessadas = aItensProcessados.map(item => item.lpn);
-        
-        // Filtra apenas os itens que foram processados para exibir na Worklist
-        const aItensAtualizados = aCurrentData.filter(item => aLpnsProcessadas.includes(item.lpn));
-        
-        // Atualiza o modelo com apenas os itens processados (agora com novos depósitos/posições)
-        oRawModel.setData(aItensAtualizados);
-        
-        // Limpa filtros para mostrar todos os itens processados
+        const aLpnsProcessadas = aItensProcessados.map((item) => item.lpn);
+
+        // Atualiza apenas os LPNs processados dentro do array completo
+        const aAtualizado = aCurrentData.map((item) => {
+          const idx = aLpnsProcessadas.indexOf(item.lpn);
+          if (idx !== -1) {
+            // Atualiza os campos de depósito/posição com os novos valores
+            // Move destino ➜ origem e limpa colunas de destino
+            return Object.assign({}, item, {
+              deposito_origem: aItensProcessados[idx].deposito_destino,
+              posicao_origem: aItensProcessados[idx].posicao_destino,
+              deposito_destino: "",
+              posicao_destino: "",
+            });
+          }
+          return item;
+        });
+
+        oRawModel.setData(aAtualizado);
+        oTable.getBinding("items").refresh(true);
+
+        // Filtra para mostrar apenas os LPNs processados
         const oBinding = oTable.getBinding("items");
-        if (oBinding) {
-          oBinding.filter([]);
+        if (oBinding && aLpnsProcessadas.length > 0) {
+          const aLpnFilters = aLpnsProcessadas.map(function(sLpn) {
+            return new Filter("lpn", FilterOperator.EQ, sLpn);
+          });
+          
+          // Aplica filtro OR para mostrar apenas os LPNs processados
+          const oLpnFilter = new Filter(aLpnFilters, false); // false = OR
+          oBinding.filter([oLpnFilter]);
         }
-        
-        // Atualiza contadores
+
         this._updateTableTitle();
-        
-        // Mostra feedback visual dos itens atualizados
-        const sMessage = iTotalProcessados === 1 
-          ? `1 item atualizado com novos depósito/posição após transferência.`
-          : `${iTotalProcessados} itens atualizados com novos depósitos/posições após transferências.`;
-        
-        sap.m.MessageToast.show(sMessage);
-        
-        console.log(`✅ ${iTotalProcessados} itens atualizados na Worklist com novos depósitos/posições`);
-        console.log("📋 Itens exibidos:", aItensAtualizados.map(item => `${item.lpn} - ${item.deposito_origem}/${item.posicao_origem}`));
+
+        const sMessage =
+          iTotalProcessados === 1
+            ? `1 item atualizado com novos depósito/posição após transferência.`
+            : `${iTotalProcessados} itens atualizados com novos depósitos/posições após transferências.`;
+
+        sap.m.MessageBox.information(sMessage, {
+          actions: [sap.m.MessageBox.Action.OK],
+          emphasizedAction: sap.m.MessageBox.Action.OK,
+          onClose: function(oAction) {
+              if (oAction === sap.m.MessageBox.Action.OK) {
+                  // ação ao clicar em "Continuar"
+                  // Exemplo: this.onContinueProcess();
+              }
+          }.bind(this)
+        });
+
+        console.log(
+          `✅ ${iTotalProcessados} itens atualizados na Worklist com novos depósitos/posições`
+        );
+        console.log(
+          "📋 Itens exibidos:",
+          aAtualizado.map(
+            (item) =>
+              `${item.lpn} - ${item.deposito_destino}/${item.posicao_destino}`
+          )
+        );
       },
 
       /**
@@ -829,22 +905,38 @@ sap.ui.define(
       _updateSelecionadosModelWithRefreshedData: function (aItensProcessados) {
         const oRawModel = this.getView().getModel("rawModel");
         if (!oRawModel) {
-          console.warn("⚠️ Modelo rawModel não encontrado para atualizar SelecionadosParaTransporte");
+          console.warn(
+            "⚠️ Modelo rawModel não encontrado para atualizar SelecionadosParaTransporte"
+          );
           return;
         }
 
         const aCurrentData = oRawModel.getData() || [];
-        const aLpnsProcessadas = aItensProcessados.map(item => item.lpn);
-        
+        const aLpnsProcessadas = aItensProcessados.map((item) => item.lpn);
+
         // Busca os dados atualizados dos itens processados
-        const aItensAtualizados = aCurrentData.filter(item => aLpnsProcessadas.includes(item.lpn));
-        
+        const aItensAtualizados = aCurrentData.filter((item) =>
+          aLpnsProcessadas.includes(item.lpn)
+        );
+
         // Atualiza o modelo global SelecionadosParaTransporte com os dados atualizados
-        const oSelecionadosModel = new sap.ui.model.json.JSONModel(aItensAtualizados);
-        sap.ui.getCore().setModel(oSelecionadosModel, "SelecionadosParaTransporte");
-        
-        console.log(`🔄 Modelo SelecionadosParaTransporte atualizado com ${aItensAtualizados.length} itens processados`);
-        console.log("📋 Dados atualizados:", aItensAtualizados.map(item => `${item.lpn}: ${item.deposito_origem}/${item.posicao_origem}`));
+        const oSelecionadosModel = new sap.ui.model.json.JSONModel(
+          aItensAtualizados
+        );
+        sap.ui
+          .getCore()
+          .setModel(oSelecionadosModel, "SelecionadosParaTransporte");
+
+        console.log(
+          `🔄 Modelo SelecionadosParaTransporte atualizado com ${aItensAtualizados.length} itens processados`
+        );
+        console.log(
+          "📋 Dados atualizados:",
+          aItensAtualizados.map(
+            (item) =>
+              `${item.lpn}: ${item.deposito_origem}/${item.posicao_origem}`
+          )
+        );
       },
 
       /**
@@ -861,19 +953,22 @@ sap.ui.define(
       _updateTableTitle: function () {
         const oTable = this.byId("table");
         const oBinding = oTable.getBinding("items");
-        
+
         if (oBinding) {
           const iLength = oBinding.getLength() || 0;
           const oViewModel = this.getModel("worklistView");
-          
+
           if (oViewModel) {
             let sTitle;
             if (iLength && this.getResourceBundle().getText) {
-              sTitle = this.getResourceBundle().getText("worklistTableTitleCount", [iLength]);
+              sTitle = this.getResourceBundle().getText(
+                "worklistTableTitleCount",
+                [iLength]
+              );
             } else {
-              sTitle = this.getResourceBundle().getText ? 
-                this.getResourceBundle().getText("worklistTableTitle") : 
-                "Lista de LPNs";
+              sTitle = this.getResourceBundle().getText
+                ? this.getResourceBundle().getText("worklistTableTitle")
+                : "Lista de LPNs";
             }
             oViewModel.setProperty("/worklistTableTitle", sTitle);
           }

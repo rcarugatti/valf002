@@ -655,10 +655,20 @@ sap.ui.define(
 
         // Bloqueia cabeçalho
         var oHeaderSelect = oView.byId("idSelectHeaderDepDestino");
+        //if (oHeaderSelect) {
+        //  oHeaderSelect.setSelectedKey("CFQ");
+        //  oHeaderSelect.setEnabled(!bBloqueado);
+        //}
         if (oHeaderSelect) {
-          oHeaderSelect.setSelectedKey("CFQ");
-          oHeaderSelect.setEnabled(!bBloqueado);
-        }
+    if (bBloqueado) {
+        /* Caso bloqueado: força CFQ e desabilita */
+        oHeaderSelect.setSelectedKey("CFQ");
+    } else {
+        /* Caso liberado: limpa seleção para mostrar o placeholder */
+        oHeaderSelect.setSelectedKey("");          // ou null
+    }
+    oHeaderSelect.setEnabled(!bBloqueado);
+}
         var sDU = aData[0]?.DU || "";
         var oDUModel = new sap.ui.model.json.JSONModel({ duAtiva: sDU });
         this.getView().setModel(oDUModel, "DUModel");
