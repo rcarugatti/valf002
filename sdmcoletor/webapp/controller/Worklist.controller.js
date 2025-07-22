@@ -859,17 +859,16 @@ sap.ui.define(
         // Filtra para mostrar apenas os LPNs processados
         const oBinding = oTable.getBinding("items");
         if (oBinding && aLpnsProcessadas.length > 0) {
-          const aLpnFilters = aLpnsProcessadas.map(function(sLpn) {
+          const aLpnFilters = aLpnsProcessadas.map(function (sLpn) {
             return new Filter("lpn", FilterOperator.EQ, sLpn);
           });
-          
+
           // Aplica filtro OR para mostrar apenas os LPNs processados
           const oLpnFilter = new Filter(aLpnFilters, false); // false = OR
           oBinding.filter([oLpnFilter]);
         }
 
-        this._updateTableTitle();
-
+        // this._updateTableTitle();   
         const sMessage =
           iTotalProcessados === 1
             ? `1 item atualizado com novos depósito/posição após transferência.`
@@ -878,12 +877,11 @@ sap.ui.define(
         sap.m.MessageBox.information(sMessage, {
           actions: [sap.m.MessageBox.Action.OK],
           emphasizedAction: sap.m.MessageBox.Action.OK,
-          onClose: function(oAction) {
-              if (oAction === sap.m.MessageBox.Action.OK) {
-                  // ação ao clicar em "Continuar"
-                  // Exemplo: this.onContinueProcess();
-              }
-          }.bind(this)
+          onClose: function (oAction) {
+            if (oAction === sap.m.MessageBox.Action.OK) {
+              window.location.reload();
+            }
+          }.bind(this),
         });
 
         console.log(
@@ -977,3 +975,4 @@ sap.ui.define(
     });
   }
 );
+
