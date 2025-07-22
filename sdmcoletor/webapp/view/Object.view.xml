@@ -99,80 +99,88 @@
             </FlexBox>
         </semantic:headerContent>
         <semantic:content>
-            <Table
-                id="objectTable"
-                width="100%"
-                items="{
-                path: 'SelecionadosParaTransporte>/' ,
+            <ScrollContainer
+                height="600px"
+                vertical="true"
+                horizontal="false">
+                <Table
+                    id="objectTable"
+                    width="100%"
+                    growing="true"
+                    growingThreshold="16"
+                    growingScrollToLoad="false"
+                    items="{
+                        path: 'SelecionadosParaTransporte>/',
                         sorter: [
-            { path: 'centro',          descending: false },
-            { path: 'deposito_origem', descending: false },
-            { path: 'posicao_origem',  descending: false }]    
-                }" 
-                noDataText="{worklistView>/tableNoDataText}"
-                busyIndicatorDelay="{worklistView>/tableBusyDelay}"
-                   mode="MultiSelect"
-                   selectionChange=".onSelectChange"
-                   growingThreshold="18"
-                growing="true"
-                growingScrollToLoad="true"
-                updateFinished=".onUpdateFinished">
-                <columns>
-                    <Column id="nameColumnObj" width="3.0rem" >
-                        <Text text="{i18n>tableNameColumnTitle}" textAlign="Left" id="nameColumnTitleObj"/>
-                    </Column>
-                    <Column id="depositoOrigemColumnObj" width="3.0rem">
-                        <Text text="{i18n>depositOrigemLabel}" textAlign="Left" id="depositoOrigemColumnTitleObj"/>
-                    </Column>
-                    <Column id="posicaoOrigemColumnObj" width="3.0rem">
-                        <Text text="{i18n>posOrigLabel}" textAlign="Left" id="posicaoOrigemColumnTitleObj"/>
-                    </Column>
-                    <Column id="loteSDMColumnObj" width="3.0rem">
-                        <Text text="{i18n>lSDMLabel}" textAlign="Left" id="loteSDMColumnTitleObj"/>
-                    </Column>
-                    <Column id="depositoDestinoColumnObj" width="6.7rem">
-                        <Text text="{i18n>depositoDestinoLabel}" textAlign="Left" id="depositoDestinoColumnTitleObj"/>
-                    </Column>
-                    <Column id="posicaoDestinoColumnObj" width="6.7rem">
-                        <Text text="{i18n>posDstLabel}" textAlign="Left" id="posicaoDestinoColumnTitleObj"/>
-                    </Column>
-           <!--         <Column id="materialColumnObj">
-                        <Text text="{i18n>materialLabel}" id="materialColumnTitleObj"/>
-                    </Column>  -->
-                </columns>
-                <items>
-                    <ColumnListItem  id="idCl1" 
-                        type="Inactive"
-                        press=".onPresst" 
-                         highlight="{= ${SelecionadosParaTransporte>DU} === 'BLOQ.' ? 'Error' : ${SelecionadosParaTransporte>DU} === 'LIB.' ? 'Success' : 'None'}">
-                        <cells>
-                            <Text id="idTxx2"  text="{SelecionadosParaTransporte>lpn}"             width="3.0rem"/>
-                            <Text id="idTxx3"  text="{SelecionadosParaTransporte>deposito_origem}" width="3.0rem"/>
-                            <Text id="idTxx1"  text="{SelecionadosParaTransporte>posicao_origem}"  width="3rem"/>
-                            <Text id="idTxx4"  text="{SelecionadosParaTransporte>lote_sdm}"        width="3rem"/>
-                            <ComboBox
-                                    id="idSelectDepDestino"
-                                    items="{DepDestinoConcat>/}"
-                                    selectedKey="{SelecionadosParaTransporte>deposito_destino}"
-                                    placeholder="-"
-                                    width="6.7rem"
-                                    change=".onChangeDepositoDestino">
-                                <core:Item id="tplDepDestino" key="{DepDestinoConcat>DEPOSITO}" text="{DepDestinoConcat>TEXTO}" />
-                            </ComboBox>
-                            <ComboBox
-                                    id="idSelectPosDest"
-                                    items="{PosDestinoConcatFull>/}"
-                                    selectedKey="{SelecionadosParaTransporte>posicao_destino}"
-                                    placeholder="-"
-                                    width="6.7rem"
-                                    change=".onChangeposicaoDestino">
-                                <core:Item id="tplPosDestino" key="{PosDestinoConcatFull>POSICAO}" text="{PosDestinoConcatFull>TEXTO}" />
-                            </ComboBox>
-                           <!-- <Text id="idTx21"  text="{SelecionadosParaTransporte>material}" width="2.5rem"/>   -->
-                        </cells>
-                    </ColumnListItem>
-                </items>
-            </Table>
+                            { path: 'centro',          descending: false },
+                            { path: 'deposito_origem', descending: false },
+                            { path: 'posicao_origem',  descending: false }
+                        ]
+                    }"
+                    noDataText="{worklistView>/tableNoDataText}"
+                    busyIndicatorDelay="{worklistView>/tableBusyDelay}"
+                    mode="MultiSelect"
+                    selectionChange=".onSelectChange"
+                    updateFinished=".onUpdateFinished">
+                    <columns>
+                        <Column id="nameColumnObj" width="3.0rem" >
+                            <Text text="{i18n>tableNameColumnTitle}" textAlign="Left" id="nameColumnTitleObj"/>
+                        </Column>
+                        <Column id="depositoOrigemColumnObj" width="3.0rem">
+                            <Text text="{i18n>depositOrigemLabel}" textAlign="Left" id="depositoOrigemColumnTitleObj"/>
+                        </Column>
+                        <Column id="posicaoOrigemColumnObj" width="3.0rem">
+                            <Text text="{i18n>posOrigLabel}" textAlign="Left" id="posicaoOrigemColumnTitleObj"/>
+                        </Column>
+                        <Column id="loteSDMColumnObj" width="3.0rem">
+                            <Text text="{i18n>lSDMLabel}" textAlign="Left" id="loteSDMColumnTitleObj"/>
+                        </Column>
+                        <Column id="depositoDestinoColumnObj" width="6.7rem">
+                            <Text text="{i18n>depositoDestinoLabel}" textAlign="Left" id="depositoDestinoColumnTitleObj"/>
+                        </Column>
+                        <Column id="posicaoDestinoColumnObj" width="6.7rem">
+                            <Text text="{i18n>posDstLabel}" textAlign="Left" id="posicaoDestinoColumnTitleObj"/>
+                        </Column>
+               <!--         <Column id="materialColumnObj">
+                            <Text text="{i18n>materialLabel}" id="materialColumnTitleObj"/>
+                        </Column>  -->
+                    </columns>
+                    <items>
+                        <ColumnListItem  id="idCl1" 
+                            type="Inactive"
+                            press=".onPresst" 
+                             highlight="{= ${SelecionadosParaTransporte>DU} === 'BLOQ.' ? 'Error' : ${SelecionadosParaTransporte>DU} === 'LIB.' ? 'Success' : 'None'}">
+                            <cells>
+                                <Text id="idTxx2"  text="{SelecionadosParaTransporte>lpn}"             width="3.0rem"/>
+                                <Text id="idTxx3"  text="{SelecionadosParaTransporte>deposito_origem}" width="3.0rem"/>
+                                <Text id="idTxx1"  text="{SelecionadosParaTransporte>posicao_origem}"  width="3rem"/>
+                                <Text id="idTxx4"  text="{SelecionadosParaTransporte>lote_sdm}"        width="3rem"/>
+                                <ComboBox
+                                        id="idSelectDepDestino"
+                                        items="{DepDestinoConcat>/}"
+                                        selectedKey="{SelecionadosParaTransporte>deposito_destino}"
+                                        placeholder="-"
+                                        width="6.7rem"
+                                        change=".onChangeDepositoDestino">
+                                    <core:Item id="tplDepDestino" key="{DepDestinoConcat>DEPOSITO}" text="{DepDestinoConcat>TEXTO}" />
+                                </ComboBox>
+                                <ComboBox
+                                        id="idSelectPosDest"
+                                        items="{PosDestinoConcatFull>/}"
+                                        selectedKey="{SelecionadosParaTransporte>posicao_destino}"
+                                        placeholder="-"
+                                        width="6.7rem"
+                                        change=".onChangeposicaoDestino">
+                                    <core:Item id="tplPosDestino" key="{PosDestinoConcatFull>POSICAO}" text="{PosDestinoConcatFull>TEXTO}" />
+                                </ComboBox>
+                               <!-- <Text id="idTx21"  text="{SelecionadosParaTransporte>material}" width="2.5rem"/>   -->
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+                <!-- Margem de rodapé (2 linhas vazias) -->
+                <VBox height="60px" />
+            </ScrollContainer>
         </semantic:content>
    </semantic:SemanticPage>
 </mvc:View>
