@@ -105,11 +105,6 @@ sap.ui.define(
                 oData
               );
 
-              // Refresh dos modelos
-              this.getOwnerComponent().getModel("MovLpn").refresh(true);
-              const oTbl = this.byId("table");
-              oTbl?.getBinding("items")?.refresh();
-
               // Processa os itens que foram transferidos com sucesso
               if (
                 oData &&
@@ -790,31 +785,15 @@ sap.ui.define(
         console.log(
           `🎯 Processando ${iTotalProcessados} itens transferidos com sucesso`
         );
+        setTimeout(() => {
+          this._restoreProcessedItemsWithUpdatedData(
+            aItensProcessados,
+            iTotalProcessados
+          );
 
-        // Aguarda um pouco para garantir que o refresh dos dados foi concluído
-        setTimeout(
-          function () {
-            // Recarrega os dados atualizados do servidor
-            this._loadMergedData();
-
-            // Aguarda o carregamento dos dados e então restaura a seleção
-            setTimeout(
-              function () {
-                this._restoreProcessedItemsWithUpdatedData(
-                  aItensProcessados,
-                  iTotalProcessados
-                );
-
-                // Atualiza o modelo SelecionadosParaTransporte com os dados atualizados
-                this._updateSelecionadosModelWithRefreshedData(
-                  aItensProcessados
-                );
-              }.bind(this),
-              1000
-            ); // Aguarda 1s para garantir que os dados foram carregados
-          }.bind(this),
-          500
-        ); // Aguarda 500ms para garantir que o refresh foi concluído
+          // Atualiza o modelo SelecionadosParaTransporte com os dados atualizados
+          this._updateSelecionadosModelWithRefreshedData(aItensProcessados);
+        }, 1000);
       },
 
       /**
@@ -868,7 +847,7 @@ sap.ui.define(
           oBinding.filter([oLpnFilter]);
         }
 
-        // this._updateTableTitle();   
+        // this._updateTableTitle();
         const sMessage =
           iTotalProcessados === 1
             ? `1 item atualizado com novos depósito/posição após transferência.`
@@ -975,4 +954,3 @@ sap.ui.define(
     });
   }
 );
-
