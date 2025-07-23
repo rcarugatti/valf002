@@ -17,7 +17,7 @@ sap.ui.define(
       /* =========================================================== */
       onValidarEntradas: function () {
         /* 1. Validação do Centro ---------------------------------- */
-        let sCentro = "";
+        let sCentro = "-";
         const oCentroModel = sap.ui.getCore().getModel("CentroSelecionado");
         if (oCentroModel) {
           sCentro = (oCentroModel.getProperty("/centro") || "").trim();
@@ -369,6 +369,11 @@ sap.ui.define(
         var sMaterial = oView.byId("searchFieldMaterial").getValue().trim();
         var sLote = oView.byId("searchLoteSDM").getValue().trim();
 
+        // Replace empty Centro with '-'
+        if (!sCentro) {
+          sCentro = "-";
+        }
+
         var aFilters = [];
 
         if (sCentro) {
@@ -397,12 +402,6 @@ sap.ui.define(
       },
       onFilterTabelaCompleta: function () {
         var oView = this.getView();
-        // ➜  Atualiza lista de posições sempre que o depósito muda
-        var sDepositoSelecionado = oView
-          .byId("idSelectDeposito")
-          .getSelectedKey();
-        this._updatePosicoesByDeposito(sDepositoSelecionado);
-
         var oTable = this.byId("table");
         var oBinding = oTable.getBinding("items");
 
@@ -413,12 +412,9 @@ sap.ui.define(
         var sPosicao = oView.byId("idComboPosicao").getSelectedKey();
         var sDU = oView.byId("idSelectDU").getSelectedKey();
 
-        // ✅ Se centro estiver vazio, não permite buscar 21062025 1018
+        // Replace empty Centro with '-'
         if (!sCentro) {
-          sap.m.MessageToast.show("Preencha o Centro para buscar os dados.");
-          oView.byId("idSelectDU").setSelectedKey("TD."); // limpa DU  inválida
-
-          return;
+          sCentro = "-";
         }
 
         var aFilters = [];
@@ -548,7 +544,15 @@ sap.ui.define(
       },
 
       onCentroChange: function (oEvent) {
+        // Replace empty Centro with '-'
+        //if (!sCentro) {
+        //  sCentro = "-";
+        //}
+        
+        
+
         var sCentro = oEvent.getSource().getValue().trim();
+        sCentro = (sCentro || "").trim() || "-";
         var oView = this.getView();
         // Guarda o centro escolhido num modelo global único
         let oCent = sap.ui.getCore().getModel("CentroSelecionado");
