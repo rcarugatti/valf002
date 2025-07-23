@@ -171,15 +171,15 @@ sap.ui.define(
           .find((cell) => cell.getId().includes("idSelectPosDest"));
 
         var oView = this.getView();
-        var aTodasOpcoes = oView.getModel("PosDestinoConcatFull").getData();
+        
+        // Obter o contexto da linha atual para pegar o lote_sdm
+        var oContext = oItem.getBindingContext("SelecionadosParaTransporte");
+        var sLoteSdm = oContext ? oContext.getProperty("lote_sdm") : "";
+        
+        // Calcular as opções com contagem dinâmica baseada no lote_sdm
+        var aPosicoesDinamicas = this._calcularPosicoesDinamicas(sDepositoSelecionado, sLoteSdm);
 
-        var aFiltradas = sDepositoSelecionado
-          ? aTodasOpcoes.filter(
-              (item) => item.DEPOSITO === sDepositoSelecionado
-            )
-          : aTodasOpcoes;
-
-        var oModelFiltrado = new JSONModel(aFiltradas);
+        var oModelFiltrado = new JSONModel(aPosicoesDinamicas);
         oSelectPosicao.setModel(oModelFiltrado);
         oSelectPosicao.bindItems(
           "/",
@@ -188,6 +188,117 @@ sap.ui.define(
             text: "{TEXTO}",
           })
         );
+      },
+
+      /**
+       * Calcula as posições com contagem dinâmica baseada no lote_sdm da linha atual
+       * @param {string} sDepositoSelecionado - Depósito filtrado
+       * @param {string} sLoteSdm - Lote SDM da linha atual
+       * @returns {Array} Array de posições com contagem dinâmica
+       */
+      _calcularPosicoesDinamicas: function (sDepositoSelecionado, sLoteSdm) {
+        var oView = this.getView();
+        var aSelecionados = oView.getModel("SelecionadosParaTransporte").getData();
+        var oMovLpnModel = oView.getModel("MovLpnCentro");
+        var aMovLpn = oMovLpnModel ? oMovLpnModel.getData() : [];
+        var aTodasOpcoes = oView.getModel("PosDestinoConcatFull").getData();
+
+        // Filtrar por depósito se selecionado
+        var aFiltradas = sDepositoSelecionado
+          ? aTodasOpcoes.filter((item) => item.DEPOSITO === sDepositoSelecionado)
+          : aTodasOpcoes;
+
+        // Para cada posição, calcular a contagem dinâmica
+        return aFiltradas.map(function (oPosicao) {
+          // Contar LPNs com mesmo lote_sdm que já estão definidos para esta posição destino
+          var iContLoteSdm = aSelecionados.filter(function (item) {
+            return (
+              item.lote_sdm === sLoteSdm &&
+              item.posicao_destino === oPosicao.POSICAO &&
+              (!sDepositoSelecionado || item.deposito_destino === sDepositoSelecionado)
+            );
+          }).length;
+
+          // Calcular total disponível na posição de origem (como no header)
+          var iTotalDisponivelPosicao = aMovLpn.filter(function (m) {
+            return (
+              m.deposito_origem === oPosicao.DEPOSITO &&
+              m.posicao_origem === oPosicao.POSICAO
+            );
+          }).length;
+
+          // Se não há total disponível calculado, usar a contagem original
+          if (iTotalDisponivelPosicao === 0) {
+            iTotalDisponivelPosicao = oPosicao.QUANT || 0;
+          }
+
+          return {
+            DEPOSITO: oPosicao.DEPOSITO,
+            POSICAO: oPosicao.POSICAO,
+            QUANT: iTotalDisponivelPosicao,
+            TEXTO: `${oPosicao.POSICAO} - ${iContLoteSdm} / ${iTotalDisponivelPosicao}`,
+          };
+        });
+      },
+
+      onChangeposicaoDestino: function (oEvent) {
+        console.log("🔄 onChangeposicaoDestino - Posição destino selecionada na tabela");
+        
+        var oSelectPosicao = oEvent.getSource();
+        var sPosicaoSelecionada = oSelectPosicao.getSelectedKey();
+        
+        console.log("📍 Posição selecionada:", sPosicaoSelecionada);
+        
+        // Atualizar as contagens de todas as ComboBoxes da tabela
+        setTimeout(function () {
+          this._refreshAllTableComboBoxes();
+        }.bind(this), 100); // Pequeno delay para garantir que o binding foi atualizado
+      },
+
+      /**
+       * Atualiza todas as ComboBoxes de posição na tabela com contagens dinâmicas
+       */
+      _refreshAllTableComboBoxes: function () {
+        var oView = this.getView();
+        var oTable = oView.byId("objectTable");
+        
+        if (!oTable) {
+          return;
+        }
+
+        var aItems = oTable.getItems();
+        
+        aItems.forEach(function (oItem) {
+          var oContext = oItem.getBindingContext("SelecionadosParaTransporte");
+          if (!oContext) {
+            return;
+          }
+
+          var sLoteSdm = oContext.getProperty("lote_sdm");
+          var sDepositoDestino = oContext.getProperty("deposito_destino");
+          
+          // Encontrar o ComboBox de posição na linha
+          var aCells = oItem.getCells();
+          var oSelectPosicao = aCells.find(function (cell) {
+            return cell.getId && cell.getId().includes("idSelectPosDest");
+          });
+
+          if (oSelectPosicao && sLoteSdm) {
+            // Calcular as opções com contagem dinâmica
+            var aPosicoesDinamicas = this._calcularPosicoesDinamicas(sDepositoDestino, sLoteSdm);
+            
+            // Atualizar o modelo do ComboBox
+            var oModelDinamico = new JSONModel(aPosicoesDinamicas);
+            oSelectPosicao.setModel(oModelDinamico);
+            oSelectPosicao.bindItems(
+              "/",
+              new sap.ui.core.Item({
+                key: "{POSICAO}",
+                text: "{TEXTO}",
+              })
+            );
+          }
+        }.bind(this));
       },
 
       onChangeDepoDestHeader: function (oEvent) {
@@ -337,6 +448,9 @@ sap.ui.define(
         if (oSelecionadosModel) {
           oSelecionadosModel.refresh();
         }
+
+        // Atualizar todas as ComboBoxes da tabela com as novas contagens
+        this._refreshAllTableComboBoxes();
 
         // Mensagem de resultado
         if (iAplicados > 0) {
@@ -678,6 +792,11 @@ sap.ui.define(
         aItems.forEach(function (oItem) {
           var aCells = oItem.getCells();
         });
+
+        // Inicializar as ComboBoxes da tabela com contagens dinâmicas
+        setTimeout(function () {
+          this._refreshAllTableComboBoxes();
+        }.bind(this), 500); // Delay para garantir que a tabela foi renderizada
       },
 
       /**
