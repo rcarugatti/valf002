@@ -171,19 +171,31 @@ sap.ui.define(
         });
         // --- Fim do novo código ---
         // Define o foco no input ao iniciar a view
-        this.getView().addEventDelegate(
-          {
-            onAfterShow: function () {
-              setTimeout(
-                function () {
-                  this.byId("inputMaterial").focus();
-                }.bind(this),
-                100
-              );
-            },
-          },
-          this
-        );
+this.getView().addEventDelegate(
+  {
+    onAfterShow: function () {
+      /* 1. Limpa seleção visual da tabela */
+      const oTable = this.byId("table");
+      if (oTable) {
+        // true = suprime o evento selectionChange
+        oTable.removeSelections(true);
+      }
+
+      /* 2. Zera a flag 'selected' no modelo rawModel (consistência) */
+      const oRaw = this.getView().getModel("rawModel");
+      if (oRaw) {
+        const aData = oRaw.getData() || [];
+        aData.forEach(it => { it.selected = false; });
+        oRaw.refresh(false); // não força nova leitura OData
+      }
+
+      /* 3. Mantém o comportamento anterior: foco no leitor */
+      setTimeout(() => { this.byId("inputMaterial").focus(); }, 100);
+    }
+  },
+  this
+);
+
 
         var oModelDU = new sap.ui.model.json.JSONModel([
           { key: "TD.", text: "Todos." },
