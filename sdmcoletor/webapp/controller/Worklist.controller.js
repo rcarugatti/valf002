@@ -715,26 +715,14 @@ sap.ui.define(
             const nTotal = nEst + nQual;
             const sDU = nQual > 0 ? "BLOQ." : "LIB.";
 
-            // if(m.lpn == "0000002842Q"){
-            //   console.log("Teste")
-            //   //debugger;
-            // }
-
             return Object.assign({}, m, {
-              //deposito_origem: t.deposito_origem || m.deposito_origem,
-              //posicao_origem: t.posicao_origem || m.posicao_origem,
-              //deposito_destino: t.deposito_destino || m.deposito_destino,
-              //posicao_destino: t.posicao_destino || m.posicao_destino,
-
-              // deposito_origem: t.deposito_origem ?? m.deposito,
-              // posicao_origem: t.posicao_origem ?? m.posicao,
               deposito_origem: m.deposito,
               posicao_origem: m.posicao,
               deposito_destino: t.deposito_destino ?? "",
               posicao_destino: t.posicao_destino ?? "",
-
               quantidade: nTotal,
               DU: sDU,
+              selected: false, // Ensure all items are unmarked
             });
           });
 
@@ -751,7 +739,7 @@ sap.ui.define(
           error: console.error,
         });
 
-        // 2. TRANSFERE  RVC
+        // 2. TRANSFERE
         oOData.read("/ZCDS_SDM_TRANSFERE_LPN", {
           urlParameters: { $top: "5000" },
           success: (oData) => {
@@ -831,6 +819,7 @@ sap.ui.define(
               posicao_origem: aItensProcessados[idx].posicao_destino,
               deposito_destino: "",
               posicao_destino: "",
+              selected: false, // Desmarca o item
             });
           }
           return item;
@@ -851,7 +840,6 @@ sap.ui.define(
           oBinding.filter([oLpnFilter]);
         }
 
-        // this._updateTableTitle();
         const sMessage =
           iTotalProcessados === 1
             ? `1 item atualizado com novos depósito/posição após transferência.`
@@ -958,3 +946,4 @@ sap.ui.define(
     });
   }
 );
+          

@@ -231,7 +231,10 @@ sap.ui.define(
           if (iTotalDisponivelPosicao === 0) {
             iTotalDisponivelPosicao = oPosicao.QUANT || 0;
           }
-
+          // Se  a contagem original
+          if (iTotalDisponivelPosicao === 0) {
+            iContLoteSdm =  0;
+          }
           return {
             DEPOSITO: oPosicao.DEPOSITO,
             POSICAO: oPosicao.POSICAO,
