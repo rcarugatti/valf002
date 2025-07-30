@@ -192,57 +192,63 @@ sap.ui.define(
 
       /**
        * Calcula as posições com contagem dinâmica baseada no lote_sdm da linha atual
-       * @param {string} sDepositoSelecionado - Depósito filtrado
-       * @param {string} sLoteSdm - Lote SDM da linha atual
-       * @returns {Array} Array de posições com contagem dinâmica
+       * @param {string} sDepositoSelecionado  Depósito filtrado (pode vir vazio)
+       * @param {string} sLoteSdm             Lote SDM da linha atual
+       * @returns {Array}                     Lista de itens {DEPOSITO, POSICAO, QUANT, TEXTO}
        */
-      _calcularPosicoesDinamicas: function (sDepositoSelecionado, sLoteSdm) {
-        var oView = this.getView();
-        var aSelecionados = oView.getModel("SelecionadosParaTransporte").getData();
-        var oMovLpnModel = oView.getModel("MovLpnCentro");
-        var aMovLpn = oMovLpnModel ? oMovLpnModel.getData() : [];
-        var aTodasOpcoes = oView.getModel("PosDestinoConcatFull").getData();
+_calcularPosicoesDinamicas: function (sDepositoSelecionado, sLoteSdm) {
+  const oView        = this.getView();
+  const oMovLpnModel = oView.getModel("MovLpnCentro");
+  const aMovLpn      = oMovLpnModel ? oMovLpnModel.getData() : [];      // universo completo
+  const aTodasOpcoes = oView.getModel("PosDestinoConcatFull").getData();
 
-        // Filtrar por depósito se selecionado
-        var aFiltradas = sDepositoSelecionado
-          ? aTodasOpcoes.filter((item) => item.DEPOSITO === sDepositoSelecionado)
-          : aTodasOpcoes;
+  // 1. Aplica filtro por depósito (caso o usuário tenha escolhido um)
+  const aFiltradas = sDepositoSelecionado
+    ? aTodasOpcoes.filter((it) => it.DEPOSITO === sDepositoSelecionado)
+    : aTodasOpcoes;
 
-        // Para cada posição, calcular a contagem dinâmica
-        return aFiltradas.map(function (oPosicao) {
-          // Contar LPNs com mesmo lote_sdm que já estão definidos para esta posição destino
-          var iContLoteSdm = aSelecionados.filter(function (item) {
-            return (
-              item.lote_sdm === sLoteSdm &&
-              item.posicao_destino === oPosicao.POSICAO &&
-              (!sDepositoSelecionado || item.deposito_destino === sDepositoSelecionado)
-            );
-          }).length;
+  // 2. Para cada posição destino, calcula:
+  //    • iContLoteSdm  → Qtde de LPNs (já existentes) com mesmo lote_sdm nessa posição
+  //    • iTotalDisponivelPosicao → Qtde total de LPNs na posição‑origem correspondente
+  return aFiltradas.map((oPosicao) => {
+    /* ------------------------------------------------------------------ *
+     * 2.1 Quantas LPNs do MESMO LOTE já estão previstas para esta posição *
+     * ------------------------------------------------------------------ */
+    const iContLoteSdm = aMovLpn.filter((m) => {
+      return (
+        m.lote_sdm         === sLoteSdm &&
+        m.posicao  === oPosicao.POSICAO &&
+        (!sDepositoSelecionado || m.deposito === sDepositoSelecionado)
+      );
+    }).length;
 
-          // Calcular total disponível na posição de origem (como no header)
-          var iTotalDisponivelPosicao = aMovLpn.filter(function (m) {
-            return (
-              m.deposito_origem === oPosicao.DEPOSITO &&
-              m.posicao_origem === oPosicao.POSICAO
-            );
-          }).length;
+    /* ------------------------------------------------------------------ *
+     * 2.2 Total disponível na posição‑origem                              *
+     * ------------------------------------------------------------------ */
+    let iTotalDisponivelPosicao = aMovLpn.filter((m) => {
+      return (
+        m.deposito_origem === oPosicao.DEPOSITO &&
+        m.posicao_origem  === oPosicao.POSICAO
+      );
+    }).length;
 
-          // Se não há total disponível calculado, usar a contagem original
-          if (iTotalDisponivelPosicao === 0) {
-            iTotalDisponivelPosicao = oPosicao.QUANT || 0;
-          }
-          // Se  a contagem original
-          if (iTotalDisponivelPosicao === 0) {
-            iContLoteSdm =  0;
-          }
-          return {
-            DEPOSITO: oPosicao.DEPOSITO,
-            POSICAO: oPosicao.POSICAO,
-            QUANT: iTotalDisponivelPosicao,
-            TEXTO: `${oPosicao.POSICAO} - ${iContLoteSdm} / ${iTotalDisponivelPosicao}`,
-          };
-        });
-      },
+    // fallback para quando o merge ainda não trouxe o total
+    if (iTotalDisponivelPosicao === 0) {
+      iTotalDisponivelPosicao = oPosicao.QUANT || 0;
+    }
+
+    /* ------------------------------------------------------------------ */
+    return {
+      DEPOSITO : oPosicao.DEPOSITO,
+      POSICAO  : oPosicao.POSICAO,
+      QUANT    : iTotalDisponivelPosicao,
+      TEXTO    : `${oPosicao.POSICAO} - ${iContLoteSdm} / ${iTotalDisponivelPosicao}`,
+    };
+  });
+},
+
+
+
 
       onChangeposicaoDestino: function (oEvent) {
         console.log("🔄 onChangeposicaoDestino - Posição destino selecionada na tabela");
