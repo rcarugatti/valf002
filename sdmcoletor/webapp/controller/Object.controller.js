@@ -47,7 +47,7 @@ sap.ui.define(
          * ────────────────────────────────────────────────────────────────*/
         this._loadMovLpnCentro(sCentro); // 2. Carga combinada MOVIMENTA + TRANSFERE
         const oMovOData = this.getOwnerComponent().getModel("MovLpn"); // modelo OData v2
-        oMovOData.setSizeLimit(5000); // >100 linhas
+        oMovOData.setSizeLimit(50000); // >100 linhas
 
         /* ────────────────────────────────────────────────────────────────
          * 3. Ler depósitos/posições válidos do centro (ZZ1_SDM_DEP_POS)
@@ -55,17 +55,17 @@ sap.ui.define(
         const oDepOData = new sap.ui.model.odata.v2.ODataModel(
           "/sap/opu/odata/sap/ZSB_SDM_MOVIMENTA_LPN/"
         );
-        const oParams = { $top: "5000" }; // sempre queremos limitar
+        const oParams = { $top: 50000 }; // sempre queremos limitar
 
-        const mUrlParams = { $top: "5000" }; // limite sempre presente
+        const mUrlParams = { $top: 50000 }; // limite sempre presente
         if (sCentro) {
           // adiciona o filtro se houver centro
           mUrlParams.$filter = `WERKS eq '${sCentro}'`;
         }
         oDepOData.read("/ZZ1_SDM_DEP_POS", {
           urlParameters: {
-            $filter: sCentro ? `WERKS eq '${sCentro}'` : undefined,
-            $top: "5000",
+            $filter: sCentro ? `WERK eq 0${sCentro}'` : undefined,
+            $top: 50000,
           },
           success: function (oData) {
             oView.setModel(
@@ -805,7 +805,7 @@ _calcularPosicoesDinamicas: function (sDepositoSelecionado, sLoteSdm) {
         // Inicializar as ComboBoxes da tabela com contagens dinâmicas
         setTimeout(function () {
           this._refreshAllTableComboBoxes();
-        }.bind(this), 500); // Delay para garantir que a tabela foi renderizada
+        }.bind(this), 500); // Delay par0a garantir que a tabela foi renderizada
       },
 
       /**
@@ -815,7 +815,7 @@ _calcularPosicoesDinamicas: function (sDepositoSelecionado, sLoteSdm) {
       _loadMovLpnCentro: function (sCentro) {
         const oView = this.getView();
         const oOD = this.getOwnerComponent().getModel("MovLpn");
-        oOD.setSizeLimit(5000);
+        oOD.setSizeLimit(50000);
 
         let aMov, aTra;
         const merge = () => {
@@ -852,7 +852,7 @@ _calcularPosicoesDinamicas: function (sDepositoSelecionado, sLoteSdm) {
         oOD.read("/ZCDS_SDM_MOVIMENTA_LPN", {
           urlParameters: {
             $filter: sCentro ? `centro eq '${sCentro}'` : undefined,
-            $top: "5000",
+            $top: 50000,
           },
           success: (oData) => {
             aMov = oData.results;
@@ -865,7 +865,7 @@ _calcularPosicoesDinamicas: function (sDepositoSelecionado, sLoteSdm) {
         oOD.read("/ZCDS_SDM_TRANSFERE_LPN", {
           urlParameters: {
             $filter: sCentro ? `centro eq '${sCentro}'` : undefined,
-            $top: "5000",
+            $top: 50000,
           },
           success: (oData) => {
             aTra = oData.results;

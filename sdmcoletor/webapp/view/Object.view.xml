@@ -33,14 +33,7 @@
                     <HBox  id="idHbx3" justifyContent="Start" alignItems="Center" class="sapUiSmallMarginBottom" >
                         <VBox  id="idVbx1" class="sapUiSmallMarginEnd" >
                             <Label  id="idLbTx1" text="Deposito Destino :  ." labelFor="idSelectHeaderDepDestino"/>
-                            <!--  
-                            <Select
-                            id="idSelectHeaderDepDestino"
-                            items="{DepDestinoConcat>/ }"
-                            selectedKey="{/depositoSelecionado}"
-                            change=".onChangeDepoDestHeader">
-                                <core:Item key="{DepDestinoConcat>DEPOSITO}" text="{DepDestinoConcat>TEXTO}" />
-                            </Select>   -->
+
                             <ComboBox
                                 id="idSelectHeaderDepDestino"
                                 width="6.7rem"
@@ -56,13 +49,7 @@
                         </VBox>
                         <VBox id="idVbx3" class="sapUiSmallMarginEnd" >
                             <Label  id="idLblTx1"  text="Posição Destino :  ." labelFor="idSelectPosDestino"/>
-                            <!-- Cabeçalho expandido acima dos botões 
-                            <Select
-                                id="idSelectPosDestino"
-                                width="10rem"
-                                items="{PosDestinoConcat>/}">
-                                <core:Item key="{PosDestinoConcat>POSICAO}" text="{PosDestinoConcat>TEXTO}" />
-                            </Select> -->
+
                             <ComboBox
                                 id="idSelectPosDestino"
                                 width="6.7rem"
@@ -141,9 +128,7 @@
                         <Column id="posicaoDestinoColumnObj" width="6.7rem">
                             <Text text="{i18n>posDstLabel}" textAlign="Left" id="posicaoDestinoColumnTitleObj"/>
                         </Column>
-               <!--         <Column id="materialColumnObj">
-                            <Text text="{i18n>materialLabel}" id="materialColumnTitleObj"/>
-                        </Column>  -->
+  
                     </columns>
                     <items>
                         <ColumnListItem  id="idCl1" 
@@ -173,7 +158,7 @@
                                         change=".onChangeposicaoDestino">
                                     <core:Item id="tplPosDestino" key="{PosDestinoConcatFull>POSICAO}" text="{PosDestinoConcatFull>TEXTO}" />
                                 </ComboBox>
-                               <!-- <Text id="idTx21"  text="{SelecionadosParaTransporte>material}" width="2.5rem"/>   -->
+                               
                             </cells>
                         </ColumnListItem>
                     </items>

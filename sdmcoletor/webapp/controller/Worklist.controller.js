@@ -1,3 +1,27 @@
+/***********************************************************************/
+/* PROGRAM ID           : N/A                                          */
+/* PROGRAM TITLE        : Display Data                                 */
+/* AUTHOR               : Carugatti, Rodolfo                           */
+/* DATE                 : 06/10/2024                                   */
+/* SUPPLIER             : Wayon                                        */
+/* DEVELOPMENT ID       :                                              */
+/* CHANGE REQUEST NUMBER:                                              */
+/* Approval Number      : N/A                                          */
+/* DESCRIPTION          :                                              */
+/*                                                                     */
+/*=====================================================================*/
+/* COPIED FROM         :  N/A                                          */
+/* TITLE               :  N/A                                          */
+/* OTHER RELATED OBJ   :  N/A                                          */
+/*=====================================================================*/
+/* CHANGE HISTORY LOG                                                  */
+/*---------------------------------------------------------------------*/
+/* MOD. NO.|  DATE    | NAME   |CORRECTION NUMBER  |CHANGE REFERENCE # */
+/*---------------------------------------------------------------------*/
+
+
+
+
 sap.ui.define(
   [
     "./BaseController",
@@ -612,7 +636,7 @@ this.getView().addEventDelegate(
           var oModel = oView.getModel(); // OData model
           oModel.read("/ZCDS_SDM_MOVIMENTA_LPN", {
             urlParameters: {
-              $top: "5000",
+              $top: 50000  // Limite de 50.000 registros
             },
             success: function (oData) {
               var oJson = new sap.ui.model.json.JSONModel(oData.results);
@@ -743,7 +767,7 @@ this.getView().addEventDelegate(
 
         // 1. MOVIMENTA
         oOData.read("/ZCDS_SDM_MOVIMENTA_LPN", {
-          urlParameters: { $top: "5000" },
+          urlParameters: { $top: 50000 },
           success: (oData) => {
             aMov = oData.results;
             merge();
@@ -753,7 +777,7 @@ this.getView().addEventDelegate(
 
         // 2. TRANSFERE
         oOData.read("/ZCDS_SDM_TRANSFERE_LPN", {
-          urlParameters: { $top: "5000" },
+          urlParameters: { $top: 50000 },
           success: (oData) => {
             aTra = oData.results;
             merge();
