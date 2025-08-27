@@ -727,10 +727,11 @@ this.getView().addEventDelegate(
        */
       _loadMergedData: function () {
         const oOData = this.getOwnerComponent().getModel();
-        let aMov, aTra;
+        let aMov = [], aTra = [];
+        let completedRequests = 0;
 
         const merge = function () {
-          if (!aMov || !aTra) return;
+          if (completedRequests < 2) return;
           const oHash = {};
 
           const makeKey = (lpn, centro, deposito) =>
@@ -743,7 +744,6 @@ this.getView().addEventDelegate(
 
           // 2. Faz o merge registro a registro
           const aMerge = aMov.map((m) => {
-            // procura TRANSFERE do mesmo LPN + Centro + Depósito
             const t = oHash[makeKey(m.lpn, m.centro, m.deposito_origem)] || {};
 
             const nEst = Number(m.quantidade || 0);
@@ -758,32 +758,53 @@ this.getView().addEventDelegate(
               posicao_destino: t.posicao_destino ?? "",
               quantidade: nTotal,
               DU: sDU,
-              selected: false, // Ensure all items are unmarked
+              selected: false,
             });
           });
 
           this.getView().setModel(new JSONModel(aMerge), "rawModel");
         }.bind(this);
 
-        // 1. MOVIMENTA
-        oOData.read("/ZCDS_SDM_MOVIMENTA_LPN", {
-          urlParameters: { $top: 50000 },
-          success: (oData) => {
-            aMov = oData.results;
-            merge();
-          },
-          error: console.error,
-        });
+        // Função para ler todos os dados com paginação
+        const readAllData = (entitySet, targetArray) => {
+          let skip = 0;
+          const pageSize = 5000;
 
-        // 2. TRANSFERE
-        oOData.read("/ZCDS_SDM_TRANSFERE_LPN", {
-          urlParameters: { $top: 50000 },
-          success: (oData) => {
-            aTra = oData.results;
-            merge();
-          },
-          error: console.error,
-        });
+          const readPage = () => {
+            oOData.read(entitySet, {
+              urlParameters: { 
+                $top: pageSize,
+                $skip: skip
+              },
+              success: (oData) => {
+                targetArray.push(...oData.results);
+                
+                // Se retornou menos que o pageSize, chegou ao fim
+                if (oData.results.length < pageSize) {
+                  completedRequests++;
+                  merge();
+                } else {
+                  // Há mais dados, continua a paginação
+                  skip += pageSize;
+                  readPage();
+                }
+              },
+              error: (error) => {
+                console.error(`Erro ao carregar ${entitySet}:`, error);
+                completedRequests++;
+                merge();
+              }
+            });
+          };
+
+          readPage();
+        };
+
+        // 1. MOVIMENTA com paginação
+        readAllData("/ZCDS_SDM_MOVIMENTA_LPN", aMov);
+
+        // 2. TRANSFERE com paginação
+        readAllData("/ZCDS_SDM_TRANSFERE_LPN", aTra);
       },
 
       /**
@@ -982,4 +1003,3 @@ this.getView().addEventDelegate(
     });
   }
 );
-          

@@ -64,7 +64,7 @@ sap.ui.define(
         }
         oDepOData.read("/ZZ1_SDM_DEP_POS", {
           urlParameters: {
-            $filter: sCentro ? `WERK eq 0${sCentro}'` : undefined,
+            $filter: sCentro ? `WERKS eq '${sCentro}'` : undefined,
             $top: 50000,
           },
           success: function (oData) {
