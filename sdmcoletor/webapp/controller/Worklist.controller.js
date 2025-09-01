@@ -1000,6 +1000,21 @@ this.getView().addEventDelegate(
           }
         }
       },
+      onChangeDeposito: function (oEvent) {
+        var sDepositoSelecionado = oEvent.getSource().getSelectedKey();
+        
+        // Atualiza as posições baseadas no depósito selecionado
+        this._updatePosicoesByDeposito(sDepositoSelecionado);
+        
+        // Limpa a seleção de posição quando o depósito muda
+        var oPosCombo = this.byId("idComboPosicao");
+        if (oPosCombo) {
+          oPosCombo.setSelectedKey("");
+        }
+        
+        // Mantém o comportamento existente - aplica filtro da tabela
+        this.onFilterTabelaCompleta();
+      },
     });
   }
 );

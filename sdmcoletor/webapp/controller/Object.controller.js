@@ -49,36 +49,16 @@ sap.ui.define(
         const oMovOData = this.getOwnerComponent().getModel("MovLpn"); // modelo OData v2
         oMovOData.setSizeLimit(50000); // >100 linhas
 
-        /* ────────────────────────────────────────────────────────────────
-         * 3. Ler depósitos/posições válidos do centro (ZZ1_SDM_DEP_POS)
-         * ────────────────────────────────────────────────────────────────*/
+        // Configurar limite do modelo OData principal
         const oDepOData = new sap.ui.model.odata.v2.ODataModel(
           "/sap/opu/odata/sap/ZSB_SDM_MOVIMENTA_LPN/"
         );
-        const oParams = { $top: 50000 }; // sempre queremos limitar
+        oDepOData.setSizeLimit(50000); // Aumenta o limite
 
-        const mUrlParams = { $top: 50000 }; // limite sempre presente
-        if (sCentro) {
-          // adiciona o filtro se houver centro
-          mUrlParams.$filter = `WERKS eq '${sCentro}'`;
-        }
-        oDepOData.read("/ZZ1_SDM_DEP_POS", {
-          urlParameters: {
-            $filter: sCentro ? `WERKS eq '${sCentro}'` : undefined,
-            $top: 50000,
-          },
-          success: function (oData) {
-            oView.setModel(
-              new sap.ui.model.json.JSONModel(oData.results),
-              "DepPostZZ1"
-            );
-            this.onConcatenaSelect(); // roda se MovLpnCentro já estiver carregado
-          }.bind(this),
-          error: (err) => {
-            sap.m.MessageToast.show("Erro ao carregar ZZ1_SDM_DEP_POS");
-            console.error(err);
-          },
-        });
+        /* ────────────────────────────────────────────────────────────────
+         * 3. Ler depósitos/posições válidos do centro (ZZ1_SDM_DEP_POS)
+         * ────────────────────────────────────────────────────────────────*/
+        this._loadAllDepPos(sCentro, oView);
 
         /* ────────────────────────────────────────────────────────────────
          * 4. Roteamento padrão da Object View
@@ -815,7 +795,7 @@ _calcularPosicoesDinamicas: function (sDepositoSelecionado, sLoteSdm) {
       _loadMovLpnCentro: function (sCentro) {
         const oView = this.getView();
         const oOD = this.getOwnerComponent().getModel("MovLpn");
-        oOD.setSizeLimit(50000);
+        oOD.setSizeLimit(50000); // Garante o limite aumentado
 
         let aMov, aTra;
         const merge = () => {
@@ -853,6 +833,7 @@ _calcularPosicoesDinamicas: function (sDepositoSelecionado, sLoteSdm) {
           urlParameters: {
             $filter: sCentro ? `centro eq '${sCentro}'` : undefined,
             $top: 50000,
+            $inlinecount: "allpages" // Para contagem total
           },
           success: (oData) => {
             aMov = oData.results;
@@ -861,11 +842,12 @@ _calcularPosicoesDinamicas: function (sDepositoSelecionado, sLoteSdm) {
           error: console.error,
         });
 
-        // 2. TRANSFERE
+        // 2. TRANSFERE  
         oOD.read("/ZCDS_SDM_TRANSFERE_LPN", {
           urlParameters: {
             $filter: sCentro ? `centro eq '${sCentro}'` : undefined,
             $top: 50000,
+            $inlinecount: "allpages"
           },
           success: (oData) => {
             aTra = oData.results;
@@ -877,6 +859,59 @@ _calcularPosicoesDinamicas: function (sDepositoSelecionado, sLoteSdm) {
 
       _grava_deposito_distinto: function (sCentro) {
       },
+
+      /**
+       * Carrega todos os dados de ZZ1_SDM_DEP_POS com paginação
+       */
+_loadAllDepPos: function (sCentro, oView) {
+  const oDepOData = new sap.ui.model.odata.v2.ODataModel(
+    "/sap/opu/odata/sap/ZSB_SDM_MOVIMENTA_LPN/"
+  );
+  oDepOData.setSizeLimit(50000);
+
+  let aAllDepPos = [];
+  let skip = 0;
+  const pageSize = 5000;
+
+  const loadPage = () => {
+    const urlParams = {
+      $top: pageSize,
+      $skip: skip
+    };
+    
+    if (sCentro) {
+      urlParams.$filter = `WERKS eq '${sCentro}'`;
+    }
+
+    oDepOData.read("/ZZ1_SDM_DEP_POS", {
+      urlParameters: urlParams,
+      success: (oData) => {
+        aAllDepPos.push(...oData.results);
+        
+        // Se retornou menos que pageSize, chegou ao fim
+        if (oData.results.length < pageSize) {
+          // Carregamento completo - criar modelo
+          oView.setModel(
+            new sap.ui.model.json.JSONModel(aAllDepPos),
+            "DepPostZZ1"
+          );
+          this.onConcatenaSelect();
+        } else {
+          // Há mais dados, continua paginação
+          skip += pageSize;
+          loadPage();
+        }
+      },
+      error: (err) => {
+        sap.m.MessageToast.show("Erro ao carregar ZZ1_SDM_DEP_POS");
+        console.error(err);
+      }
+    });
+  };
+
+  loadPage();
+},
+
     });
   }
 );

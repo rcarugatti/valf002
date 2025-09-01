@@ -123,7 +123,7 @@
                             id="idSelectDeposito"
                             width="8.6rem"
                             selectedKey=""
-                            change=".onFilterTabelaCompleta"
+                            change=".onChangeDeposito"
                             selectionChange=".onFilterTabelaCompleta"
                             placeholder="Todos"
                             items="{DepositoFilter>/}"
