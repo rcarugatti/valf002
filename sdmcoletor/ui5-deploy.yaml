@@ -24,6 +24,6 @@ builder:
           name: ZUI5_SDMMVTO
           description: SDM COLETOR APP
           package: ZSDM_MMWY
-          transport: S4DK946698
+          transport: S4DK946824
         exclude:
           - /test/

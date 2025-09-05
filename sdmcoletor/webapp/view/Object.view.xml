@@ -56,9 +56,10 @@
                                 items="{PosDestinoConcat>/}"                                
                                 selectedKey="{/depositoSelecionado}"
                                 change=".onChangePosiDestHeader"
-                                placeholder="Todos"  
-                               >
-                                <core:Item  id="idCr1"  key="{PosDestinoConcat>POSICAO}" text="{PosDestinoConcat>TEXTO}" />
+                                placeholder="Todos"
+                                maxSuggestionWidth="20rem"
+                                showSecondaryValues="true">
+                                <core:Item id="idCr1" key="{PosDestinoConcat>POSICAO}" text="{PosDestinoConcat>TEXTO}" />
                             </ComboBox>
                         </VBox>
                         <VBox  id="idVbx2" class="sapUiSmallMarginEnd" >
@@ -151,11 +152,13 @@
                                 </ComboBox>
                                 <ComboBox
                                         id="idSelectPosDest"
+                                        width="6.7rem"
                                         items="{PosDestinoConcatFull>/}"
                                         selectedKey="{SelecionadosParaTransporte>posicao_destino}"
+                                        change=".onChangeposicaoDestino"
                                         placeholder="-"
-                                        width="6.7rem"
-                                        change=".onChangeposicaoDestino">
+                                        maxSuggestionWidth="30rem"
+                                        showSecondaryValues="true">
                                     <core:Item id="tplPosDestino" key="{PosDestinoConcatFull>POSICAO}" text="{PosDestinoConcatFull>TEXTO}" />
                                 </ComboBox>
                                

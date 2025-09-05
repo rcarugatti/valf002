@@ -214,7 +214,7 @@ this.getView().addEventDelegate(
       }
 
       /* 3. Mantém o comportamento anterior: foco no leitor */
-      setTimeout(() => { this.byId("inputMaterial").focus(); }, 100);
+      setTimeout(() => { this.byId("inputMaterial").focus(); }, 1000);
     }
   },
   this

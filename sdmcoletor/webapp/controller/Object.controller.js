@@ -68,6 +68,14 @@ sap.ui.define(
           .attachPatternMatched(this._onObjectMatched, this);
       },
 
+      /* Helper central para garantir sizeLimit > 100 (evita corte no ComboBox) */
+      _createLargeJsonModel: function (aData) {
+        const oM = new sap.ui.model.json.JSONModel(aData || []);
+        // Usa algo seguro e expansível
+        oM.setSizeLimit(Math.max(10000, (aData || []).length + 100));
+        return oM;
+      },
+
       onConcatenaSelect: function () {
         const oView = this.getView();
 
@@ -128,15 +136,25 @@ sap.ui.define(
          * 3. Publica nos modelos usados pelos ComboBox
          * ────────────────────────────────────────────────────────────────*/
         oView.setModel(
-          new sap.ui.model.json.JSONModel(aPosicoes),
+          this._createLargeJsonModel(aPosicoes),
           "PosDestinoConcat"
         );
+        // Configurar limite do modelo JSON
+        oView.getModel("PosDestinoConcat").setSizeLimit(1000);
+
+        const oPosFull = this._createLargeJsonModel(aPosicoes);
+        oPosFull.setDefaultBindingMode("OneWay");
+        oView.setModel(oPosFull, "PosDestinoConcatFull");
+        // Força refresh do ComboBox depois de criar o modelo
+        setTimeout(() => {
+          const oCombo = this.byId("idSelectPosDest");
+          if (oCombo) {
+            oCombo.getBinding("items").refresh();
+          }
+        }, 1000);
+
         oView.setModel(
-          new sap.ui.model.json.JSONModel(aPosicoes),
-          "PosDestinoConcatFull"
-        );
-        oView.setModel(
-          new sap.ui.model.json.JSONModel(aDepositos),
+          this._createLargeJsonModel(aDepositos),
           "DepDestinoConcat"
         );
       },
@@ -159,7 +177,8 @@ sap.ui.define(
         // Calcular as opções com contagem dinâmica baseada no lote_sdm
         var aPosicoesDinamicas = this._calcularPosicoesDinamicas(sDepositoSelecionado, sLoteSdm);
 
-        var oModelFiltrado = new JSONModel(aPosicoesDinamicas);
+        // Aplicar modelo com sizeLimit ampliado
+        var oModelFiltrado = this._createLargeJsonModel(aPosicoesDinamicas);
         oSelectPosicao.setModel(oModelFiltrado);
         oSelectPosicao.bindItems(
           "/",
@@ -273,11 +292,11 @@ _calcularPosicoesDinamicas: function (sDepositoSelecionado, sLoteSdm) {
           });
 
           if (oSelectPosicao && sLoteSdm) {
-            // Calcular as opções com contagem dinâmica
-            var aPosicoesDinamicas = this._calcularPosicoesDinamicas(sDepositoDestino, sLoteSdm);
-            
-            // Atualizar o modelo do ComboBox
-            var oModelDinamico = new JSONModel(aPosicoesDinamicas);
+            var aPosicoesDinamicas = this._calcularPosicoesDinamicas(
+              sDepositoDestino,
+              sLoteSdm
+            );
+            var oModelDinamico = this._createLargeJsonModel(aPosicoesDinamicas);
             oSelectPosicao.setModel(oModelDinamico);
             oSelectPosicao.bindItems(
               "/",
@@ -352,10 +371,13 @@ _calcularPosicoesDinamicas: function (sDepositoSelecionado, sLoteSdm) {
 
         /* ───── Aplicar aos itens marcados ───── */
         const oTable = oView.byId("objectTable");
-        const aCtx = oTable.getSelectedContexts() || [];
+        // Forma robusta: pegar itens selecionados e depois os contexts do modelo nomeado
+        const aSelectedItems = oTable.getSelectedItems() || [];
+        const aCtx = aSelectedItems
+          .map((it) => it.getBindingContext("SelecionadosParaTransporte"))
+          .filter(Boolean);
 
-        // Debug: verificar quantos itens foram selecionados
-        console.log(`📊 Contextos selecionados: ${aCtx.length}`);
+        console.log(`📊 Itens selecionados UI: ${aSelectedItems.length} | Contextos válidos: ${aCtx.length}`);
 
         if (aCtx.length === 0) {
           sap.m.MessageToast.show("Nenhuma linha selecionada. Selecione as linhas que deseja aplicar o destino.");
@@ -364,91 +386,50 @@ _calcularPosicoesDinamicas: function (sDepositoSelecionado, sLoteSdm) {
 
         let iAplicados = 0;
         let iErros = 0;
-        const aTodasOpcoes = oView.getModel("PosDestinoConcatFull").getData();
+        const oSelModel = oView.getModel("SelecionadosParaTransporte");
+        if (!oSelModel) {
+          sap.m.MessageBox.error("Modelo SelecionadosParaTransporte não encontrado.");
+          return;
+        }
 
-        aCtx.forEach(function (oCtx, i) {
+        aCtx.forEach((oCtx, i) => {
           try {
-            // Verificações de segurança
-            if (!oCtx) {
-              console.warn(`⚠️ Contexto ${i} é nulo`);
-              iErros++;
-              return;
-            }
-
-            const sPath = oCtx.getPath();
-            const oModel = oCtx.getModel();
-
-            if (!oModel) {
-              console.warn(`⚠️ Modelo não encontrado para contexto ${i}`);
-              iErros++;
-              return;
-            }
-
+            const sPath = oCtx.getPath(); // ex: "/0"
             if (!sPath) {
-              console.warn(`⚠️ Path não encontrado para contexto ${i}`);
+              console.warn("⚠️ Path vazio para contexto", oCtx);
               iErros++;
               return;
             }
+            // Set direto
+            oSelModel.setProperty(sPath + "/deposito_destino", sDepDestino);
+            oSelModel.setProperty(sPath + "/posicao_destino", sPosDestino);
 
-            // Verificar se o path existe no modelo
-            const oData = oModel.getProperty(sPath);
-            if (!oData) {
-              console.warn(`⚠️ Dados não encontrados no path ${sPath}`);
-              iErros++;
-              return;
-            }
-
-            // Encontrar e atualizar o ComboBox de posição antes de aplicar o valor
-            const aItems = oTable.getItems();
-            const oItem = aItems.find(item => item.getBindingContext("SelecionadosParaTransporte")?.getPath() === sPath);
-            if (oItem) {
-              const oSelectPos = oItem.getCells().find(cell => cell.getId().includes("idSelectPosDest"));
-              if (oSelectPos) {
-                const aFiltradas = aTodasOpcoes.filter(item => item.DEPOSITO === sDepDestino);
-                oSelectPos.setModel(new JSONModel(aFiltradas));
-                oSelectPos.bindItems("/", new sap.ui.core.Item({ key: "{POSICAO}", text: "{TEXTO}" }));
-              }
-            }
-
-            // Aplicar os valores
-            oModel.setProperty(sPath + "/deposito_destino", sDepDestino);
-            oModel.setProperty(sPath + "/posicao_destino", sPosDestino);
-
-            // Verificar se foi aplicado corretamente
-            const sDepAplicado = oModel.getProperty(sPath + "/deposito_destino");
-            const sPosAplicada = oModel.getProperty(sPath + "/posicao_destino");
-
-            if (sDepAplicado === sDepDestino && sPosAplicada === sPosDestino) {
+            // Confirma leitura (sincrono)
+            const dep = oSelModel.getProperty(sPath + "/deposito_destino");
+            const pos = oSelModel.getProperty(sPath + "/posicao_destino");
+            if (dep === sDepDestino && pos === sPosDestino) {
               iAplicados++;
-              console.log(`✅ Aplicado com sucesso - Linha ${i}: ${sDepDestino}/${sPosDestino}`);
+              console.log(`✅ Linha ${i} OK (${sPath}) -> ${dep}/${pos}`);
             } else {
-              console.warn(`⚠️ Falha na aplicação - Linha ${i}: esperado ${sDepDestino}/${sPosDestino}, obtido ${sDepAplicado}/${sPosAplicada}`);
               iErros++;
+              console.warn(`⚠️ Linha ${i} mismatch (${sPath}) -> ${dep}/${pos}`);
             }
-
-          } catch (error) {
-            console.error(`❌ Erro ao processar contexto ${i}:`, error);
+          } catch (e) {
             iErros++;
+            console.error("❌ Erro aplicando destino contexto", oCtx, e);
           }
         });
 
-        // Forçar refresh do modelo para garantir que as mudanças sejam refletidas
-        const oSelecionadosModel = oView.getModel("SelecionadosParaTransporte");
-        if (oSelecionadosModel) {
-          oSelecionadosModel.refresh();
-        }
-
-        // Atualizar todas as ComboBoxes da tabela com as novas contagens
+        oSelModel.refresh(true);
         this._refreshAllTableComboBoxes();
 
-        // Mensagem de resultado
         if (iAplicados > 0) {
-          const sMsg = iErros > 0 
-            ? `Destino aplicado a ${iAplicados} linha(s). ${iErros} erro(s) encontrado(s).`
-            : `Destino aplicado a ${iAplicados} linha(s) selecionada(s).`;
+          const sMsg = iErros
+            ? `Destino aplicado a ${iAplicados} linha(s). ${iErros} erro(s).`
+            : `Destino aplicado a ${iAplicados} linha(s).`;
           sap.m.MessageToast.show(sMsg);
         } else {
-          sap.m.MessageBox.error("Não foi possível aplicar o destino a nenhuma linha. Verifique o console para mais detalhes.");
+          sap.m.MessageBox.error("Não foi possível aplicar o destino. Verifique se as linhas estão realmente selecionadas.");
         }
         console.log("✅ Fim onAplicarButtonPress");
       },
@@ -625,7 +606,7 @@ _calcularPosicoesDinamicas: function (sDepositoSelecionado, sLoteSdm) {
               console.log(`LPN ${element.lpn} processada com sucesso (${processedCount}/${totalCount})`);
               
               // Adiciona o item processado com sucesso ao array
-              aItensComSucesso.push(aItensProcessados[index]);
+              aItensComSucesso.push(aItensProcessadas[index]);
               
               // Se todas as transferências foram processadas
               if (processedCount === totalCount) {
@@ -907,6 +888,53 @@ _loadAllDepPos: function (sCentro, oView) {
         console.error(err);
       }
     });
+  };
+
+  loadPage();
+},
+
+    });
+  }
+);
+      $skip: skip
+    };
+    
+    if (sCentro) {
+      urlParams.$filter = `WERKS eq '${sCentro}'`;
+    }
+
+    oDepOData.read("/ZZ1_SDM_DEP_POS", {
+      urlParameters: urlParams,
+      success: (oData) => {
+        aAllDepPos.push(...oData.results);
+        
+        // Se retornou menos que pageSize, chegou ao fim
+        if (oData.results.length < pageSize) {
+          // Carregamento completo - criar modelo
+          oView.setModel(
+            new sap.ui.model.json.JSONModel(aAllDepPos),
+            "DepPostZZ1"
+          );
+          this.onConcatenaSelect();
+        } else {
+          // Há mais dados, continua paginação
+          skip += pageSize;
+          loadPage();
+        }
+      },
+      error: (err) => {
+        sap.m.MessageToast.show("Erro ao carregar ZZ1_SDM_DEP_POS");
+        console.error(err);
+      }
+    });
+  };
+
+  loadPage();
+},
+
+    });
+  }
+);
   };
 
   loadPage();
